@@ -13,10 +13,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: NovaVPN
-
     steps:
       - name: Get source code
         uses: actions/checkout@v4
@@ -28,17 +24,17 @@ jobs:
           java-version: '17'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
 
       - name: Build APK
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug
+        run: gradle -p NovaVPN assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: NovaVPN/**/build/outputs/apk/debug/*.apk
+          path: NovaVPN/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 7
