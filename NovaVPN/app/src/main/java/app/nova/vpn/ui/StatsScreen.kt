@@ -19,20 +19,27 @@ import app.nova.vpn.core.VpnState
 import app.nova.vpn.core.VpnStatus
 import app.nova.vpn.data.Prefs
 import kotlinx.coroutines.delay
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle as DayStyle
 
 @Composable
 fun StatsScreen(status: VpnStatus) {
     val locale = LocalConfiguration.current.locales[0]
+    val fa = locale.language == "fa"
     var daily by remember { mutableStateOf(Prefs.dailySeconds()) }
-    LaunchedEffect(Unit) { while (true) { daily = Prefs.dailySeconds(); delay(5000) } }
+    var traffic by remember { mutableStateOf(Prefs.dailyTraffic()) }
+    LaunchedEffect(Unit) {
+        while (true) { daily = Prefs.dailySeconds(); traffic = Prefs.dailyTraffic(); delay(5000) }
+    }
 
     val today = LocalDate.now()
     val week = (6 downTo 0).map { today.minusDays(it.toLong()) }
     val secs = week.map { daily[it.toString()] ?: 0L }
     val maxSecs = (secs.maxOrNull() ?: 0L).coerceAtLeast(1L)
     val (streak, best) = remember(daily) { streaks(daily) }
+    val usedToday = traffic[today.toString()] ?: 0L
+    val usedWeek = week.sumOf { traffic[it.toString()] ?: 0L }
     val protocol by VpnState.protocol.collectAsState()
 
     var elapsed by remember { mutableLongStateOf(0L) }
@@ -69,7 +76,7 @@ fun StatsScreen(status: VpnStatus) {
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                d.dayOfWeek.getDisplayName(DayStyle.SHORT, locale),
+                                if (fa) persianDay(d.dayOfWeek) else d.dayOfWeek.getDisplayName(DayStyle.SHORT, locale),
                                 color = if (isToday) NovaColors.Text else NovaColors.Dim, fontSize = 11.sp, maxLines = 1
                             )
                         }
@@ -87,6 +94,11 @@ fun StatsScreen(status: VpnStatus) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Tile(Modifier.weight(1f), R.string.stat_streak, stringResource(R.string.days_fmt, streak))
             Tile(Modifier.weight(1f), R.string.stat_best, stringResource(R.string.days_fmt, best))
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Tile(Modifier.weight(1f), R.string.stat_today, formatBytes(usedToday))
+            Tile(Modifier.weight(1f), R.string.stat_week_data, formatBytes(usedWeek))
         }
         Spacer(Modifier.height(16.dp))
     }
@@ -116,4 +128,21 @@ private fun streaks(daily: Map<String, Long>): Pair<Int, Int> {
     if (d !in days) d = d.minusDays(1)
     while (d in days) { cur++; d = d.minusDays(1) }
     return cur to best
+}
+
+private fun persianDay(d: DayOfWeek) = when (d) {
+    DayOfWeek.SATURDAY -> "ش"
+    DayOfWeek.SUNDAY -> "ی"
+    DayOfWeek.MONDAY -> "د"
+    DayOfWeek.TUESDAY -> "س"
+    DayOfWeek.WEDNESDAY -> "چ"
+    DayOfWeek.THURSDAY -> "پ"
+    DayOfWeek.FRIDAY -> "ج"
+}
+
+private fun formatBytes(b: Long): String = when {
+    b >= 1L shl 30 -> "%.2f GB".format(b / (1L shl 30).toDouble())
+    b >= 1L shl 20 -> "%.1f MB".format(b / (1L shl 20).toDouble())
+    b >= 1L shl 10 -> "%d KB".format(b shr 10)
+    else -> "0 KB"
 }

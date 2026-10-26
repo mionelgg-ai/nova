@@ -71,4 +71,60 @@
     <string name="notif_connected">Connected to %s</string>
     <string name="notif_disconnect">Disconnect</string>
     <string name="notif_channel">VPN status</string>
+
+    <!-- banners / bonus -->
+    <string name="renew">Renew</string>
+    <string name="expiry_banner">Your subscription ends in %d days</string>
+    <string name="expiry_banner_today">Your subscription ends today</string>
+    <string name="section_bonus">Bonus servers</string>
+    <string name="bonus_locked_hint">Watch an ad to unlock</string>
+    <string name="bonus_active">Bonus active · %s left</string>
+    <string name="bonus_title">Unlock bonus servers</string>
+    <string name="bonus_text">Watch a short ad to use bonus servers for %d minutes.</string>
+    <string name="bonus_watch">Watch ad</string>
+    <string name="bonus_unlocked">Bonus servers unlocked for %d minutes</string>
+    <string name="ad_unavailable">No ad available right now. Please try again later.</string>
+    <string name="cancel">Cancel</string>
+    <string name="badge_new">NEW</string>
+    <string name="badge_busy">BUSY</string>
+    <string name="badge_maint">MAINT</string>
+    <string name="maint_toast">This server is under maintenance</string>
+
+    <!-- update -->
+    <string name="update_title">Update available</string>
+    <string name="update_text_default">A new version (%s) is available.</string>
+    <string name="update_now">Update</string>
+    <string name="update_later">Later</string>
+
+    <!-- connection events -->
+    <string name="toast_switched">Server unavailable. Switched to %s</string>
+    <string name="toast_all_failed">No server responded. Try again later.</string>
+    <string name="toast_unverified">Connected, but the connection couldn\'t be verified.</string>
+    <string name="toast_failed">Connection failed</string>
+
+    <!-- split tunneling / routing -->
+    <string name="split_title">Split tunneling</string>
+    <string name="split_desc">Selected apps bypass the VPN and use your normal connection.</string>
+    <string name="split_note">Changes apply on the next connection.</string>
+    <string name="split_search">Search apps</string>
+    <string name="split_count">%d apps</string>
+    <string name="bypass_ir">Iranian sites direct</string>
+    <string name="bypass_ir_desc">Iranian websites and apps connect without VPN.</string>
+
+    <!-- profile extras -->
+    <string name="share_app">Invite friends</string>
+    <string name="share_text">Try Nova VPN: %s</string>
+    <string name="privacy_title">Privacy policy</string>
+    <string name="privacy_body">Nova VPN does not collect, store or sell your browsing activity. The app does not ask for your name, phone number or email.\n\nStored only on your device: your language, selected server, activation code, and usage statistics (connection time and data used). These are never uploaded.\n\nServer list: the app downloads a configuration file to get the list of locations. Like any web request, the host of that file can see your IP address.\n\nAds: free users see ads from Google AdMob, which may use advertising identifiers. See Google\'s privacy policy for details.\n\nVPN traffic: when you connect, your traffic passes through our servers. We do not inspect or log its content.\n\nContact us through our Telegram channel.</string>
+    <string name="back">Back</string>
+
+    <!-- stats -->
+    <string name="stat_today">Data today</string>
+    <string name="stat_week_data">Data this week</string>
+
+    <!-- notifications -->
+    <string name="notif_channel_reminders">Reminders</string>
+    <string name="notif_expiry_title">Subscription ending soon</string>
+    <string name="notif_expiry_text">Your premium plan ends in %d days. Tap to renew.</string>
+    <string name="notice_open">Open</string>
 </resources>

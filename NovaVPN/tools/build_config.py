@@ -14,8 +14,17 @@ What gets encrypted:
   * each activation code stores the premium key wrapped with a key derived from THAT code,
     so only someone who knows a valid code can read premium links.
 Remove a code from the source and rebuild to revoke it (apps pick it up on next refresh).
+
+Optional top-level fields (all optional):
+  offer       {"title","titleFa","text","textFa","price","endsAt"}   discount banner with countdown
+  notice      {"id","text","textFa"}                                  dismissible message on the home screen (change "id" to show it again)
+  update      {"version":2,"name":"1.1.0","url":"https://t.me/..","force":false,"text":"","textFa":""}
+              version = the app's versionCode; users with an older build get an update dialog
+  shareText   text used by the "Invite friends" button
+  bonusMinutes  minutes of bonus access after a rewarded ad (default 60)
+Per-server optional fields:  "bonus": true   "tag": "new" | "busy" | "maintenance"
 """
-import base64, hashlib, json, os, sys
+import base64, hashlib, json, os, sys, time
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 FREE_ITER = 10_000   # must match Crypto.kt
@@ -60,6 +69,7 @@ def main(src_path: str, out_path: str) -> None:
             sys.exit(f"duplicate server id: {s['id']}")
         seen.add(s["id"])
         premium = bool(s.get("premium", False))
+        bonus = bool(s.get("bonus", False)) and not premium      # bonus = free-key encryption, unlocked by a rewarded ad
         key = premium_key if premium else free_key
         servers.append({
             "id": s["id"],
@@ -68,6 +78,8 @@ def main(src_path: str, out_path: str) -> None:
             "cc": s["cc"].upper(),
             "city": s.get("city", ""),
             "premium": premium,
+            "bonus": bonus,
+            "tag": s.get("tag", ""),          # "", "new", "busy", "maintenance"
             "link": seal(key, s["link"].strip().encode()),
         })
 
@@ -82,13 +94,15 @@ def main(src_path: str, out_path: str) -> None:
 
     out = {
         "v": 1,
+        "rev": int(time.time()),              # newest file wins when several mirrors answer
         "salt": b64(salt),
         "telegram": src["telegram"],
         "servers": servers,
         "codes": codes,
     }
-    if src.get("offer"):
-        out["offer"] = src["offer"]
+    for k in ("offer", "notice", "update", "shareText", "bonusMinutes"):
+        if src.get(k):
+            out[k] = src[k]
 
     json.dump(out, open(out_path, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     print(f"OK  {len(servers)} servers ({sum(1 for s in servers if not s['premium'])} free), "

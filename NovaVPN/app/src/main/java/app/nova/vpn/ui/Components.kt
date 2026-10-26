@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -152,4 +153,47 @@ fun BottomBar(selected: Int, onSelect: (Int) -> Unit) {
 fun formatClock(totalSeconds: Long): String {
     val s = totalSeconds.coerceAtLeast(0)
     return "%02d:%02d:%02d".format(s / 3600, (s % 3600) / 60, s % 60)
+}
+
+/** Small dismissible message card used on the home screen. */
+@Composable
+fun InfoBanner(
+    text: String,
+    icon: ImageVector,
+    accent: Color,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+    onClose: (() -> Unit)? = null,
+) {
+    val shape = RoundedCornerShape(18.dp)
+    Row(
+        Modifier.fillMaxWidth().clip(shape).background(NovaColors.Surface)
+            .border(1.dp, accent.copy(alpha = 0.45f), shape).padding(start = 14.dp, end = 6.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, tint = accent, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(10.dp))
+        Text(text, Modifier.weight(1f), fontSize = 13.sp, maxLines = 2)
+        if (actionLabel != null && onAction != null) {
+            Text(
+                actionLabel, color = accent, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable(onClick = onAction).padding(horizontal = 10.dp, vertical = 8.dp)
+            )
+        }
+        if (onClose != null) {
+            Box(
+                Modifier.size(32.dp).clip(CircleShape).clickable(onClick = onClose),
+                contentAlignment = Alignment.Center
+            ) { Icon(Icons.Rounded.Close, null, tint = NovaColors.Dim, modifier = Modifier.size(16.dp)) }
+        }
+    }
+}
+
+@Composable
+fun SubHeader(title: String, onBack: () -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        CircleIconButton(Icons.AutoMirrored.Rounded.ArrowBack, onBack)
+        Spacer(Modifier.width(14.dp))
+        Text(title, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+    }
 }

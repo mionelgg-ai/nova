@@ -71,4 +71,60 @@
     <string name="notif_connected">متصل به %s</string>
     <string name="notif_disconnect">قطع اتصال</string>
     <string name="notif_channel">وضعیت VPN</string>
+
+    <!-- banners / bonus -->
+    <string name="renew">تمدید</string>
+    <string name="expiry_banner">اشتراک شما %d روز دیگر تمام می‌شود</string>
+    <string name="expiry_banner_today">اشتراک شما امروز تمام می‌شود</string>
+    <string name="section_bonus">سرورهای جایزه</string>
+    <string name="bonus_locked_hint">با دیدن تبلیغ باز کنید</string>
+    <string name="bonus_active">جایزه فعال · %s باقی مانده</string>
+    <string name="bonus_title">باز کردن سرورهای جایزه</string>
+    <string name="bonus_text">یک تبلیغ کوتاه ببینید و %d دقیقه از سرورهای جایزه استفاده کنید.</string>
+    <string name="bonus_watch">دیدن تبلیغ</string>
+    <string name="bonus_unlocked">سرورهای جایزه برای %d دقیقه باز شد</string>
+    <string name="ad_unavailable">فعلاً تبلیغی در دسترس نیست. کمی بعد دوباره امتحان کنید.</string>
+    <string name="cancel">انصراف</string>
+    <string name="badge_new">جدید</string>
+    <string name="badge_busy">شلوغ</string>
+    <string name="badge_maint">تعمیر</string>
+    <string name="maint_toast">این سرور در حال تعمیر است</string>
+
+    <!-- update -->
+    <string name="update_title">نسخه جدید</string>
+    <string name="update_text_default">نسخه جدید (%s) منتشر شده است.</string>
+    <string name="update_now">به‌روزرسانی</string>
+    <string name="update_later">بعداً</string>
+
+    <!-- connection events -->
+    <string name="toast_switched">سرور در دسترس نبود. به %s تغییر کرد</string>
+    <string name="toast_all_failed">هیچ سروری پاسخ نداد. بعداً دوباره امتحان کنید.</string>
+    <string name="toast_unverified">متصل شد، اما صحت اتصال تأیید نشد.</string>
+    <string name="toast_failed">اتصال برقرار نشد</string>
+
+    <!-- split tunneling / routing -->
+    <string name="split_title">تقسیم ترافیک (Split tunneling)</string>
+    <string name="split_desc">برنامه‌های انتخاب‌شده بدون VPN و با اینترنت عادی کار می‌کنند.</string>
+    <string name="split_note">تغییرات در اتصال بعدی اعمال می‌شود.</string>
+    <string name="split_search">جستجوی برنامه</string>
+    <string name="split_count">%d برنامه</string>
+    <string name="bypass_ir">سایت‌های ایرانی مستقیم</string>
+    <string name="bypass_ir_desc">سایت‌ها و برنامه‌های ایرانی بدون VPN باز می‌شوند.</string>
+
+    <!-- profile extras -->
+    <string name="share_app">دعوت دوستان</string>
+    <string name="share_text">Nova VPN را امتحان کنید: %s</string>
+    <string name="privacy_title">حریم خصوصی</string>
+    <string name="privacy_body">Nova VPN فعالیت وب‌گردی شما را جمع‌آوری، ذخیره یا فروش نمی‌کند. برنامه نام، شماره تلفن یا ایمیل شما را نمی‌خواهد.\n\nفقط روی دستگاه شما ذخیره می‌شود: زبان، سرور انتخابی، کد فعال‌سازی و آمار مصرف (مدت اتصال و حجم مصرفی). این اطلاعات هرگز ارسال نمی‌شوند.\n\nلیست سرورها: برنامه برای دریافت لیست لوکیشن‌ها یک فایل تنظیمات دانلود می‌کند. مثل هر درخواست اینترنتی، میزبان آن فایل آدرس IP شما را می‌بیند.\n\nتبلیغات: کاربران رایگان تبلیغات Google AdMob را می‌بینند که ممکن است از شناسه تبلیغاتی استفاده کند. برای جزئیات، سیاست حریم خصوصی گوگل را ببینید.\n\nترافیک VPN: هنگام اتصال، ترافیک شما از سرورهای ما عبور می‌کند. محتوای آن بررسی یا ثبت نمی‌شود.\n\nبرای ارتباط با ما از کانال تلگرام استفاده کنید.</string>
+    <string name="back">بازگشت</string>
+
+    <!-- stats -->
+    <string name="stat_today">مصرف امروز</string>
+    <string name="stat_week_data">مصرف این هفته</string>
+
+    <!-- notifications -->
+    <string name="notif_channel_reminders">یادآوری‌ها</string>
+    <string name="notif_expiry_title">اشتراک رو به پایان است</string>
+    <string name="notif_expiry_text">اشتراک پریمیوم شما %d روز دیگر تمام می‌شود. برای تمدید بزنید.</string>
+    <string name="notice_open">باز کردن</string>
 </resources>

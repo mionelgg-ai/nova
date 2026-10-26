@@ -14,6 +14,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,13 +32,23 @@ import androidx.core.os.LocaleListCompat
 import app.nova.vpn.BuildConfig
 import app.nova.vpn.MainViewModel
 import app.nova.vpn.R
+import app.nova.vpn.data.Jalali
+import app.nova.vpn.data.Prefs
 
 @Composable
-fun ProfileScreen(vm: MainViewModel, onTelegram: () -> Unit) {
+fun ProfileScreen(
+    vm: MainViewModel,
+    onTelegram: () -> Unit,
+    onShare: () -> Unit,
+    onSplit: () -> Unit,
+    onPrivacy: () -> Unit,
+) {
     val ctx = LocalContext.current
     val premium by vm.premium.collectAsState()
     val refreshing by vm.refreshing.collectAsState()
     val lang = LocalConfiguration.current.locales[0].language
+    val bypass by vm.bypassIran.collectAsState()
+    val splitCount = Prefs.splitApps.size
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(top = 12.dp),
@@ -66,7 +78,7 @@ fun ProfileScreen(vm: MainViewModel, onTelegram: () -> Unit) {
         )
         if (premium.active) {
             Text(
-                premium.expires?.let { stringResource(R.string.plan_expires, it) } ?: stringResource(R.string.plan_no_expiry),
+                premium.expires?.let { stringResource(R.string.plan_expires, Jalali.display(it, lang == "fa")) } ?: stringResource(R.string.plan_no_expiry),
                 color = NovaColors.Dim, fontSize = 13.sp
             )
         }
@@ -101,13 +113,40 @@ fun ProfileScreen(vm: MainViewModel, onTelegram: () -> Unit) {
         }
         Spacer(Modifier.height(12.dp))
 
+        // bypass Iranian sites
+        NovaCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
+            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.AltRoute, null, tint = NovaColors.Lime, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.bypass_ir), fontSize = 15.sp)
+                    Text(stringResource(R.string.bypass_ir_desc), color = NovaColors.Dim, fontSize = 12.sp)
+                }
+                Switch(
+                    checked = bypass, onCheckedChange = { vm.setBypassIran(it) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = NovaColors.Bg, checkedTrackColor = NovaColors.Lime,
+                        uncheckedThumbColor = NovaColors.Dim, uncheckedTrackColor = NovaColors.Surface2,
+                        uncheckedBorderColor = NovaColors.Border
+                    )
+                )
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        ActionRow(Icons.Rounded.CallSplit, stringResource(R.string.split_title), detail = if (splitCount > 0) stringResource(R.string.split_count, splitCount) else null, onClick = onSplit)
+        Spacer(Modifier.height(12.dp))
         ActionRow(Icons.AutoMirrored.Rounded.Send, stringResource(R.string.join_channel), onClick = onTelegram)
+        Spacer(Modifier.height(12.dp))
+        ActionRow(Icons.Rounded.Share, stringResource(R.string.share_app), onClick = onShare)
         Spacer(Modifier.height(12.dp))
         val okMsg = stringResource(R.string.refreshed)
         val failMsg = stringResource(R.string.refresh_failed)
         ActionRow(Icons.Rounded.Refresh, stringResource(R.string.refresh_servers), spinning = refreshing) {
             vm.refresh { ok -> Toast.makeText(ctx, if (ok) okMsg else failMsg, Toast.LENGTH_SHORT).show() }
         }
+
+        Spacer(Modifier.height(12.dp))
+        ActionRow(Icons.Rounded.PrivacyTip, stringResource(R.string.privacy_title), onClick = onPrivacy)
 
         Spacer(Modifier.height(20.dp))
         Text(stringResource(R.string.version_fmt, BuildConfig.VERSION_NAME), color = NovaColors.Dim, fontSize = 12.sp)
@@ -128,13 +167,14 @@ private fun LangChip(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ActionRow(icon: ImageVector, label: String, spinning: Boolean = false, onClick: () -> Unit) {
+private fun ActionRow(icon: ImageVector, label: String, spinning: Boolean = false, detail: String? = null, onClick: () -> Unit) {
     NovaCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp), onClick = onClick) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, null, tint = NovaColors.Lime, modifier = Modifier.size(22.dp))
             Spacer(Modifier.width(12.dp))
             Text(label, Modifier.weight(1f), fontSize = 15.sp)
             if (spinning) Text("…", color = NovaColors.Dim)
+            if (detail != null) Text(detail, color = NovaColors.Dim, fontSize = 12.sp)
         }
     }
 }

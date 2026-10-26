@@ -37,6 +37,7 @@ fun HomeScreen(
     onOpenServers: () -> Unit,
     onPremium: () -> Unit,
     onTelegram: () -> Unit,
+    extra: @Composable () -> Unit = {},
 ) {
     val selected by vm.selected.collectAsState()
     val pings by vm.pings.collectAsState()
@@ -93,7 +94,9 @@ fun HomeScreen(
             }
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(12.dp))
+        extra()
+        Spacer(Modifier.height(8.dp))
 
         // server card
         NovaCard(

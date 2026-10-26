@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Nova.Starting" parent="Theme.Nova">
+        <item name="android:windowBackground">@color/nova_lime</item>
+        <item name="android:windowSplashScreenBackground">@color/nova_lime</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_icon</item>
+    </style>
+</resources>

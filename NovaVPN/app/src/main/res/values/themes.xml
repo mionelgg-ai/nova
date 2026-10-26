@@ -5,4 +5,9 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
+
+    <!-- Shown by the system before the first frame; MainActivity switches to Theme.Nova in onCreate -->
+    <style name="Theme.Nova.Starting" parent="Theme.Nova">
+        <item name="android:windowBackground">@color/nova_lime</item>
+    </style>
 </resources>

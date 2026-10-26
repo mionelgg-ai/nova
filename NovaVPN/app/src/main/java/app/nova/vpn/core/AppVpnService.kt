@@ -6,98 +6,241 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.TrafficStats
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.os.Process
 import androidx.core.app.NotificationCompat
+import app.nova.vpn.Cfg
 import app.nova.vpn.MainActivity
 import app.nova.vpn.R
 import app.nova.vpn.data.Prefs
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.LocalDate
 
 class AppVpnService : VpnService() {
 
     private var tun: ParcelFileDescriptor? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var connectJob: Job? = null
     private var tickJob: Job? = null
+    private var restartJob: Job? = null
+
     private var lastTick = 0L
+    private var lastRx = 0L
+    private var lastTx = 0L
+
+    private var activeConfig: String? = null
+    private var netCallback: ConnectivityManager.NetworkCallback? = null
+    private var lastNetwork: Network? = null
+    private var restartNeeded = false
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_STOP -> stopVpn()
             ACTION_START -> {
-                val config = intent.getStringExtra(EXTRA_CONFIG)
-                val name = intent.getStringExtra(EXTRA_NAME).orEmpty()
-                if (config == null) stopVpn() else startVpn(config, name)
+                val configs = intent.getStringArrayListExtra(EXTRA_CONFIGS).orEmpty()
+                val names = intent.getStringArrayListExtra(EXTRA_NAMES).orEmpty()
+                val ids = intent.getStringArrayListExtra(EXTRA_IDS).orEmpty()
+                val protos = intent.getStringArrayListExtra(EXTRA_PROTOS).orEmpty()
+                val split = intent.getStringArrayListExtra(EXTRA_SPLIT).orEmpty()
+                if (configs.isEmpty()) stopVpn() else startVpn(configs, names, ids, protos, split)
             }
         }
         return START_NOT_STICKY
     }
 
-    private fun startVpn(config: String, serverName: String) {
+    // ------------------------------------------------------------------ connect
+
+    private fun startVpn(
+        configs: List<String>, names: List<String>, ids: List<String>, protos: List<String>, split: List<String>,
+    ) {
+        connectJob?.cancel()
         VpnState.status.value = VpnStatus.Connecting
-        startInForeground(serverName)
+        startInForeground(names.firstOrNull().orEmpty())
 
-        scope.launch {
+        connectJob = scope.launch {
             try {
-                val builder = Builder()
-                    .setSession(getString(R.string.app_name))
-                    .setMtu(1500)
-                    .addAddress("172.19.0.1", 30)
-                    .addAddress("fdfe:dcba:9876::1", 126)
-                    .addRoute("0.0.0.0", 0)
-                    .addRoute("::", 0)
-                    .addDnsServer("1.1.1.1")
-                    .addDnsServer("8.8.8.8")
-                // Xray's own outbound sockets must not loop back into the tunnel.
-                builder.addDisallowedApplication(packageName)
+                if (tun == null) tun = buildTun(split) ?: error("VPN permission revoked")
 
-                val pfd = builder.establish() ?: error("VPN permission revoked")
-                tun = pfd
-                // Xray gets its own duplicate of the fd; we keep ours so we can always close the interface.
-                val fd = ParcelFileDescriptor.dup(pfd.fileDescriptor).detachFd()
-                XrayCore.start(config, fd)
+                var chosen = -1
+                for (i in configs.indices) {
+                    if (startCore(configs[i]) && probe()) { chosen = i; break }
+                    XrayCore.stop()
+                }
 
+                var unverified = false
+                if (chosen < 0) {
+                    if (Cfg.STRICT_PROBE) {
+                        VpnState.events.tryEmit("all_failed")
+                        stopVpn()
+                        return@launch
+                    }
+                    // lenient: nothing could be verified -> use the first server anyway
+                    chosen = 0
+                    unverified = true
+                    if (!startCore(configs[0])) {
+                        VpnState.events.tryEmit("failed")
+                        stopVpn()
+                        return@launch
+                    }
+                }
+
+                activeConfig = configs[chosen]
+                VpnState.protocol.value = protos.getOrElse(chosen) { "" }
+                VpnState.activeServerId.value = ids.getOrNull(chosen)
+                if (chosen > 0) {
+                    VpnState.events.tryEmit("switched:" + names.getOrElse(chosen) { "" })
+                    updateNotification(names.getOrElse(chosen) { "" })
+                }
+                if (unverified) VpnState.events.tryEmit("unverified")
+
+                registerNetworkCallback()
                 VpnState.status.value = VpnStatus.Connected(System.currentTimeMillis())
                 startTicker()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Throwable) {
+                VpnState.events.tryEmit("failed")
                 stopVpn()
             }
         }
     }
 
+    private fun buildTun(split: List<String>): ParcelFileDescriptor? {
+        val b = Builder()
+            .setSession(getString(R.string.app_name))
+            .setMtu(1500)
+            .addAddress("172.19.0.1", 30)
+            .addAddress("fdfe:dcba:9876::1", 126)
+            .addRoute("0.0.0.0", 0)
+            .addRoute("::", 0)
+            .addDnsServer("1.1.1.1")
+            .addDnsServer("8.8.8.8")
+        // Xray's own outbound sockets must not loop back into the tunnel.
+        b.addDisallowedApplication(packageName)
+        // Split tunneling: these apps bypass the VPN.
+        for (pkg in split) runCatching { b.addDisallowedApplication(pkg) }
+        return b.establish()
+    }
+
+    /** Starts Xray on a fresh duplicate of the tun fd. */
+    private fun startCore(config: String): Boolean = runCatching {
+        XrayCore.stop()
+        val fd = ParcelFileDescriptor.dup(tun!!.fileDescriptor).detachFd()
+        XrayCore.start(config, fd)
+    }.isSuccess
+
+    /** Real request through the proxy; false if it fails or takes too long. */
+    private suspend fun probe(): Boolean {
+        val d = scope.async(Dispatchers.IO) {
+            runCatching { XrayCore.measureDelay(Cfg.PROBE_URL) }.getOrDefault(-1L)
+        }
+        val ms = withTimeoutOrNull(Cfg.PROBE_TIMEOUT_MS) { d.await() } ?: -1L
+        return ms >= 0
+    }
+
+    // ------------------------------------------------------------------ network changes
+
+    private fun registerNetworkCallback() {
+        if (netCallback != null) return
+        val cm = getSystemService(ConnectivityManager::class.java) ?: return
+        val cb = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                val prev = lastNetwork
+                lastNetwork = network
+                runCatching { setUnderlyingNetworks(arrayOf(network)) }
+                if (restartNeeded || (prev != null && prev != network)) {
+                    restartNeeded = false
+                    scheduleRestart()
+                }
+            }
+
+            override fun onLost(network: Network) {
+                if (lastNetwork == network) {
+                    lastNetwork = null
+                    restartNeeded = true
+                }
+            }
+        }
+        netCallback = cb
+        runCatching { cm.registerDefaultNetworkCallback(cb) }
+    }
+
+    /** Wi-Fi <-> mobile switch: restart the core so its sockets use the new network. */
+    private fun scheduleRestart() {
+        val cfg = activeConfig ?: return
+        restartJob?.cancel()
+        restartJob = scope.launch {
+            delay(1200)
+            startCore(cfg)
+        }
+    }
+
+    // ------------------------------------------------------------------ stats
+
     private fun startTicker() {
+        val uid = Process.myUid()
         lastTick = System.currentTimeMillis()
+        lastRx = TrafficStats.getUidRxBytes(uid)
+        lastTx = TrafficStats.getUidTxBytes(uid)
         tickJob?.cancel()
         tickJob = scope.launch {
             while (isActive) {
                 delay(5_000)
-                flushSeconds()
+                flushStats()
             }
         }
     }
 
-    private fun flushSeconds() {
+    private fun flushStats() {
+        val day = LocalDate.now().toString()
         val now = System.currentTimeMillis()
-        if (lastTick > 0) Prefs.addSeconds(LocalDate.now().toString(), (now - lastTick) / 1000)
+        if (lastTick > 0) Prefs.addSeconds(day, (now - lastTick) / 1000)
         lastTick = now
+
+        val uid = Process.myUid()
+        val rx = TrafficStats.getUidRxBytes(uid)
+        val tx = TrafficStats.getUidTxBytes(uid)
+        if (rx >= 0 && lastRx >= 0 && tx >= 0 && lastTx >= 0) {
+            Prefs.addTraffic(day, (rx - lastRx).coerceAtLeast(0) + (tx - lastTx).coerceAtLeast(0))
+        }
+        lastRx = rx
+        lastTx = tx
     }
 
+    // ------------------------------------------------------------------ stop
+
     private fun stopVpn() {
+        connectJob?.cancel()
         tickJob?.cancel()
-        if (lastTick > 0) flushSeconds()
+        restartJob?.cancel()
+        if (lastTick > 0) flushStats()
         lastTick = 0
+        netCallback?.let { cb ->
+            runCatching { getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(cb) }
+        }
+        netCallback = null
+        lastNetwork = null
+        restartNeeded = false
+        activeConfig = null
         XrayCore.stop()
         runCatching { tun?.close() }
         tun = null
+        VpnState.activeServerId.value = null
         VpnState.status.value = VpnStatus.Disconnected
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -111,15 +254,9 @@ class AppVpnService : VpnService() {
         super.onDestroy()
     }
 
-    // ---------------------------------------------------------------- notification
+    // ------------------------------------------------------------------ notification
 
-    private fun startInForeground(serverName: String) {
-        val nm = getSystemService(NotificationManager::class.java)
-        if (Build.VERSION.SDK_INT >= 26) {
-            nm.createNotificationChannel(
-                NotificationChannel(CHANNEL, getString(R.string.notif_channel), NotificationManager.IMPORTANCE_LOW)
-            )
-        }
+    private fun buildNotification(serverName: String): Notification {
         val open = PendingIntent.getActivity(
             this, 0, Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
@@ -128,7 +265,7 @@ class AppVpnService : VpnService() {
             this, 1, Intent(this, AppVpnService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        val n: Notification = NotificationCompat.Builder(this, CHANNEL)
+        return NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.notif_connected, serverName))
@@ -137,7 +274,16 @@ class AppVpnService : VpnService() {
             .setOngoing(true)
             .setColor(0xFFB6FF1A.toInt())
             .build()
+    }
 
+    private fun startInForeground(serverName: String) {
+        val nm = getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= 26) {
+            nm.createNotificationChannel(
+                NotificationChannel(CHANNEL, getString(R.string.notif_channel), NotificationManager.IMPORTANCE_LOW)
+            )
+        }
+        val n = buildNotification(serverName)
         if (Build.VERSION.SDK_INT >= 34) {
             startForeground(NOTIF_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED)
         } else {
@@ -145,11 +291,18 @@ class AppVpnService : VpnService() {
         }
     }
 
+    private fun updateNotification(serverName: String) {
+        getSystemService(NotificationManager::class.java).notify(NOTIF_ID, buildNotification(serverName))
+    }
+
     companion object {
         const val ACTION_START = "app.nova.vpn.START"
         const val ACTION_STOP = "app.nova.vpn.STOP"
-        const val EXTRA_CONFIG = "config"
-        const val EXTRA_NAME = "name"
+        const val EXTRA_CONFIGS = "configs"
+        const val EXTRA_NAMES = "names"
+        const val EXTRA_IDS = "ids"
+        const val EXTRA_PROTOS = "protos"
+        const val EXTRA_SPLIT = "split"
         private const val CHANNEL = "vpn"
         private const val NOTIF_ID = 1
     }

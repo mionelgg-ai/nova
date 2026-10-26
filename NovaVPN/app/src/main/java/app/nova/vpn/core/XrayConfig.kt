@@ -9,7 +9,7 @@ import org.json.JSONObject
 object XrayConfig {
     class Built(val protocol: String, val json: String)
 
-    fun fromLink(link: String): Built {
+    fun fromLink(link: String, bypassIran: Boolean = false): Built {
         val l = link.trim()
         val (protocol, outbound) = when {
             l.startsWith("vless://") -> "VLESS" to vless(l)
@@ -40,8 +40,22 @@ object XrayConfig {
                     .put(JSONObject().put("tag", "block").put("protocol", "blackhole"))
             )
             .put("dns", JSONObject().put("servers", JSONArray().put("1.1.1.1").put("8.8.8.8")))
-            .put("routing", JSONObject().put("domainStrategy", "AsIs"))
+            .put("routing", JSONObject().put("domainStrategy", "IPIfNonMatch").put("rules", rules(bypassIran)))
         return Built(protocol, config.toString())
+    }
+
+    /** Iranian sites/apps go straight out (needs geoip.dat in filesDir — the caller checks that). */
+    private fun rules(bypassIran: Boolean): JSONArray {
+        val rules = JSONArray()
+        if (bypassIran) {
+            rules.put(
+                JSONObject().put("type", "field").put("domain", JSONArray().put("domain:ir")).put("outboundTag", "direct")
+            )
+            rules.put(
+                JSONObject().put("type", "field").put("ip", JSONArray().put("geoip:ir")).put("outboundTag", "direct")
+            )
+        }
+        return rules
     }
 
     // ---------------------------------------------------------------- protocols

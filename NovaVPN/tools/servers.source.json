@@ -1,7 +1,6 @@
 {
   "appSecret": "CHANGE_ME_TO_RANDOM_STRING",
   "telegram": "https://t.me/YOUR_CHANNEL",
-
   "offer": {
     "title": "50% Off",
     "titleFa": "۵۰٪ تخفیف",
@@ -10,23 +9,145 @@
     "price": "",
     "endsAt": "2026-12-31T23:59:00Z"
   },
-
   "servers": [
-    { "id": "ca", "name": "Canada",      "nameFa": "کانادا",    "cc": "CA", "city": "Toronto",    "premium": false, "link": "vless://00000000-0000-0000-0000-000000000001@ca.example.com:443?type=ws&security=tls&sni=ca.example.com&path=%2Fws#ca" },
-    { "id": "pl", "name": "Poland",      "nameFa": "لهستان",    "cc": "PL", "city": "Warsaw",     "premium": false, "link": "vless://00000000-0000-0000-0000-000000000002@pl.example.com:443?type=ws&security=tls&sni=pl.example.com&path=%2Fws#pl" },
-    { "id": "nl", "name": "Netherlands", "nameFa": "هلند",      "cc": "NL", "city": "Amsterdam",  "premium": false, "link": "vless://00000000-0000-0000-0000-000000000003@nl.example.com:443?type=ws&security=tls&sni=nl.example.com&path=%2Fws#nl" },
-    { "id": "fi", "name": "Finland",     "nameFa": "فنلاند",    "cc": "FI", "city": "Helsinki",   "premium": false, "link": "vless://00000000-0000-0000-0000-000000000004@fi.example.com:443?type=ws&security=tls&sni=fi.example.com&path=%2Fws#fi" },
-    { "id": "se", "name": "Sweden",      "nameFa": "سوئد",      "cc": "SE", "city": "Stockholm",  "premium": false, "link": "vless://00000000-0000-0000-0000-000000000005@se.example.com:443?type=ws&security=tls&sni=se.example.com&path=%2Fws#se" },
-
-    { "id": "de", "name": "Germany",     "nameFa": "آلمان",     "cc": "DE", "city": "Frankfurt",  "premium": true,  "link": "vless://00000000-0000-0000-0000-000000000011@de.example.com:443?type=ws&security=tls&sni=de.example.com&path=%2Fws#de" },
-    { "id": "gb", "name": "United Kingdom", "nameFa": "انگلستان", "cc": "GB", "city": "London",   "premium": true,  "link": "vless://00000000-0000-0000-0000-000000000012@gb.example.com:443?type=ws&security=tls&sni=gb.example.com&path=%2Fws#gb" },
-    { "id": "us", "name": "United States", "nameFa": "آمریکا",  "cc": "US", "city": "New York",   "premium": true,  "link": "vless://00000000-0000-0000-0000-000000000013@us.example.com:443?type=ws&security=tls&sni=us.example.com&path=%2Fws#us" },
-    { "id": "tr", "name": "Türkiye",     "nameFa": "ترکیه",     "cc": "TR", "city": "Istanbul",   "premium": true,  "link": "vless://00000000-0000-0000-0000-000000000014@tr.example.com:443?type=ws&security=tls&sni=tr.example.com&path=%2Fws#tr" },
-    { "id": "ae", "name": "UAE",         "nameFa": "امارات",    "cc": "AE", "city": "Dubai",      "premium": true,  "link": "vless://00000000-0000-0000-0000-000000000015@ae.example.com:443?type=ws&security=tls&sni=ae.example.com&path=%2Fws#ae" }
+    {
+      "id": "ca",
+      "name": "Canada",
+      "nameFa": "کانادا",
+      "cc": "CA",
+      "city": "Toronto",
+      "premium": false,
+      "link": "vless://00000000-0000-0000-0000-000000000001@ca.example.com:443?type=ws&security=tls&sni=ca.example.com&path=%2Fws#ca"
+    },
+    {
+      "id": "pl",
+      "name": "Poland",
+      "nameFa": "لهستان",
+      "cc": "PL",
+      "city": "Warsaw",
+      "premium": false,
+      "link": "vless://00000000-0000-0000-0000-000000000002@pl.example.com:443?type=ws&security=tls&sni=pl.example.com&path=%2Fws#pl"
+    },
+    {
+      "id": "nl",
+      "name": "Netherlands",
+      "nameFa": "هلند",
+      "cc": "NL",
+      "city": "Amsterdam",
+      "premium": false,
+      "link": "vless://00000000-0000-0000-0000-000000000003@nl.example.com:443?type=ws&security=tls&sni=nl.example.com&path=%2Fws#nl",
+      "tag": "new"
+    },
+    {
+      "id": "fi",
+      "name": "Finland",
+      "nameFa": "فنلاند",
+      "cc": "FI",
+      "city": "Helsinki",
+      "premium": false,
+      "link": "vless://00000000-0000-0000-0000-000000000004@fi.example.com:443?type=ws&security=tls&sni=fi.example.com&path=%2Fws#fi"
+    },
+    {
+      "id": "se",
+      "name": "Sweden",
+      "nameFa": "سوئد",
+      "cc": "SE",
+      "city": "Stockholm",
+      "premium": false,
+      "link": "vless://00000000-0000-0000-0000-000000000005@se.example.com:443?type=ws&security=tls&sni=se.example.com&path=%2Fws#se",
+      "tag": "busy"
+    },
+    {
+      "id": "de",
+      "name": "Germany",
+      "nameFa": "آلمان",
+      "cc": "DE",
+      "city": "Frankfurt",
+      "premium": true,
+      "link": "vless://00000000-0000-0000-0000-000000000011@de.example.com:443?type=ws&security=tls&sni=de.example.com&path=%2Fws#de"
+    },
+    {
+      "id": "gb",
+      "name": "United Kingdom",
+      "nameFa": "انگلستان",
+      "cc": "GB",
+      "city": "London",
+      "premium": true,
+      "link": "vless://00000000-0000-0000-0000-000000000012@gb.example.com:443?type=ws&security=tls&sni=gb.example.com&path=%2Fws#gb"
+    },
+    {
+      "id": "us",
+      "name": "United States",
+      "nameFa": "آمریکا",
+      "cc": "US",
+      "city": "New York",
+      "premium": true,
+      "link": "vless://00000000-0000-0000-0000-000000000013@us.example.com:443?type=ws&security=tls&sni=us.example.com&path=%2Fws#us"
+    },
+    {
+      "id": "tr",
+      "name": "Türkiye",
+      "nameFa": "ترکیه",
+      "cc": "TR",
+      "city": "Istanbul",
+      "premium": true,
+      "link": "vless://00000000-0000-0000-0000-000000000014@tr.example.com:443?type=ws&security=tls&sni=tr.example.com&path=%2Fws#tr"
+    },
+    {
+      "id": "ae",
+      "name": "UAE",
+      "nameFa": "امارات",
+      "cc": "AE",
+      "city": "Dubai",
+      "premium": true,
+      "link": "vless://00000000-0000-0000-0000-000000000015@ae.example.com:443?type=ws&security=tls&sni=ae.example.com&path=%2Fws#ae"
+    },
+    {
+      "id": "jp",
+      "name": "Japan",
+      "nameFa": "ژاپن",
+      "cc": "JP",
+      "city": "Tokyo",
+      "premium": false,
+      "bonus": true,
+      "link": "vless://00000000-0000-0000-0000-000000000021@jp.example.com:443?type=ws&security=tls&sni=jp.example.com&path=%2Fws#jp"
+    },
+    {
+      "id": "sg",
+      "name": "Singapore",
+      "nameFa": "سنگاپور",
+      "cc": "SG",
+      "city": "Singapore",
+      "premium": false,
+      "bonus": true,
+      "link": "vless://00000000-0000-0000-0000-000000000022@sg.example.com:443?type=ws&security=tls&sni=sg.example.com&path=%2Fws#sg"
+    }
   ],
-
   "codes": [
-    { "code": "DEMO-1234-ABCD", "expires": "2027-12-31", "note": "demo code (delete before release)" },
-    { "code": "NOVA-7KQ2-9XPL", "expires": "2026-12-31", "note": "customer: Ali" }
-  ]
+    {
+      "code": "DEMO-1234-ABCD",
+      "expires": "2027-12-31",
+      "note": "demo code (delete before release)"
+    },
+    {
+      "code": "NOVA-7KQ2-9XPL",
+      "expires": "2026-12-31",
+      "note": "customer: Ali"
+    }
+  ],
+  "notice": {
+    "id": "n1",
+    "text": "Welcome to Nova VPN!",
+    "textFa": "به Nova VPN خوش آمدید!"
+  },
+  "update": {
+    "version": 1,
+    "name": "1.0.0",
+    "url": "https://t.me/YOUR_CHANNEL",
+    "force": false,
+    "text": "",
+    "textFa": ""
+  },
+  "shareText": "Nova VPN – fast & simple VPN: https://t.me/YOUR_CHANNEL",
+  "bonusMinutes": 60
 }
