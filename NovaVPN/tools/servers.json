@@ -1,0 +1,117 @@
+{
+  "v": 1,
+  "salt": "/IJ1OTwlIJeLFPTaohW+Dw==",
+  "telegram": "https://t.me/YOUR_CHANNEL",
+  "servers": [
+    {
+      "id": "ca",
+      "name": "Canada",
+      "nameFa": "کانادا",
+      "cc": "CA",
+      "city": "Toronto",
+      "premium": false,
+      "link": "A7IeHspiVnf00TF63bIFoNXwu+TXySmX/zRoz5txy8wcFgm4ra4OkCd4X4oFKxwamKZZ7Esxz/q+gBXk0gY0O4NS7trXLjTNXve78Vwk82YvlYo1SKtXHs9AclB0st/FZJWmPnm0tMttiNPvwAqLYzwQTQnXe3t/2/hVM92TcO370wcCKs+a+g8FJ/qqeQ9ttw=="
+    },
+    {
+      "id": "pl",
+      "name": "Poland",
+      "nameFa": "لهستان",
+      "cc": "PL",
+      "city": "Warsaw",
+      "premium": false,
+      "link": "NYG8nJIhNWMlnOS7MGsWQx7xdaK29dW+cJ8+MqJwnsKkHWHy2jQmoLEGdmTufSoMA7+zaX/9gKLtqOQ4seC7u+ia5UcKhDL+WDZPNrb55nUEEFtjn+6OXLJ4etaI5k4USxHIBC72Gkkc1itGxp5gOpHVHfh+vC041EPj/zrCejee2Wgm7ixr64TgBySAJzuxgQ=="
+    },
+    {
+      "id": "nl",
+      "name": "Netherlands",
+      "nameFa": "هلند",
+      "cc": "NL",
+      "city": "Amsterdam",
+      "premium": false,
+      "link": "AvbfjRLEqwJm2QpRjy7DImjS26cgTCV1xGX8yM/6lIWb+DMjyG2k9bstwfW/xac6/pcDvltJuvvw5jUrEJVYU6ha6pUy8jzgcZtE7g62BJptBGyHlhA5QpG4LrXmN4cS/2cZgNd9YRYkcj/jZs0Aw4FL9a6W++yT60G6gwScO3L5C3Pg8tBAdI1IK6HBFZFTDQ=="
+    },
+    {
+      "id": "fi",
+      "name": "Finland",
+      "nameFa": "فنلاند",
+      "cc": "FI",
+      "city": "Helsinki",
+      "premium": false,
+      "link": "mgfgqFUt53aamWIIofJDD6Xy51lXBShJXZsAc7SyGN9eXhVXYncUWwOmjGNPLSt1rzKiH/q80Su36F9ncS5S5OFSzfX7RgkP9Pf5Ujt5Q+a/OEQFGkU1N1bq/vJeXRG/Ojiy5pGrTrM3sIEJ+8m5QM9M0EgQE1xSIDPnqfjEmyx8KUjMiSY5BvcyZnQyHBtTCg=="
+    },
+    {
+      "id": "se",
+      "name": "Sweden",
+      "nameFa": "سوئد",
+      "cc": "SE",
+      "city": "Stockholm",
+      "premium": false,
+      "link": "lUBY1oB9VYNbRDFhT672ijIXK3b3vVbJ8lm4/5KCqxWyJG1xH7tqUjNoNBHoj8h+M4Ef+a7rlEC2SRdo4RsHRtL0DWqeMM6qQIHS593bRKFppCrKLGtIV50LPtsnYJxnC0Wjw51aU/F/IYvBHY4fZg7VgwGkG2smKxZsMHTaIi2AV4+ERGtnJoZSj/ZB2aWoqA=="
+    },
+    {
+      "id": "de",
+      "name": "Germany",
+      "nameFa": "آلمان",
+      "cc": "DE",
+      "city": "Frankfurt",
+      "premium": true,
+      "link": "znM5jmNkdPGSEmEp2WYanpdLMatDR/Kk+1RrKuT1EUUeLfWhqDXwewrQeEQipLqfRlmeIWBMa01H1NHi2aDMKPxrOLyUzqZzXl7eOBP7vlwQMzzrcrZoU7O3GBGLhnuoKwQFKL+V3yHEKESzatww9vh6vTSobKRR2KxNTcOYBjb06HoCvpkA3g2flRscR4dsng=="
+    },
+    {
+      "id": "gb",
+      "name": "United Kingdom",
+      "nameFa": "انگلستان",
+      "cc": "GB",
+      "city": "London",
+      "premium": true,
+      "link": "zG6tvsmJ582yhl4X88gQppZYq8VYumBRfy/RRQNk1/gIWGAkFXBAdtn9ktFB28jpD7/ItbENBlMOupyJ10eZwlqyjHHqqQmfOmBh8pRJKGrY4G2iFIC13lMdURXRi/Honj+FZbyXtcsXMmOznMcCQiwj2HZVNSMvf3MEY26JrLBMhdYnY3LtgWEKl7EHOqMGQg=="
+    },
+    {
+      "id": "us",
+      "name": "United States",
+      "nameFa": "آمریکا",
+      "cc": "US",
+      "city": "New York",
+      "premium": true,
+      "link": "db4C1/dLX+TqjCVGqMrwrKmA4l0QvdrvqLME11rjBzJ+CPlP8rwnXiSbhpPVH+RLisogFrK29kiEsf0i7OQaRd0mUECLLClUEE8qloQbq14zemESbdqbGoAQhGNDQFmyQv0oW+Pn3XmOo3/RIvVurD7FZi9jADArAEpkNEXwJkEFIKmf5oCUauF76XvLObaKNQ=="
+    },
+    {
+      "id": "tr",
+      "name": "Türkiye",
+      "nameFa": "ترکیه",
+      "cc": "TR",
+      "city": "Istanbul",
+      "premium": true,
+      "link": "R///D1lUaLOD0pR6Z9tsvwVthvX130EQoI1TYiCwtzVh4PUKdHymqnOMzweZ59kdFhBnatMLbppw/U/My7GO3auSJ2lhqyNs3fuXzFDVMHZNVFG11to1DOBEky1J+ApaWUnXEQzfMxyLgNS4ZPzucf9y9kBEZyys3RW69uI3M9J//8QJgfxuDB0nJrTma9n25g=="
+    },
+    {
+      "id": "ae",
+      "name": "UAE",
+      "nameFa": "امارات",
+      "cc": "AE",
+      "city": "Dubai",
+      "premium": true,
+      "link": "Nh8+ET3IKOeZ+gu+fXFAClckLziosk6THWkVnTF1nr81B7jZMj9mqupZNp7Og6iLEmh124CgtNXa7DDnbrnDv2fDF0xptLO8XNlYuyDIMzvojes4WhvIGcS1SxvHY5Dx3KJF3gsRmwPylQ9fF5q1Zgan53Wzcr9YIMNaxFafCi6sgyQcsT4UYc9G+V2ravJhww=="
+    }
+  ],
+  "codes": [
+    {
+      "id": "e9348050",
+      "wrapped": "dstW599lY+14KE5z6uhOQHExRmPMaNuXm32V3UZLN1iyza/fW2eRQhC2BWBKlJdzB/i+dhWys+njI9eH",
+      "expires": "2027-12-31"
+    },
+    {
+      "id": "d061705e",
+      "wrapped": "VD+j/s7VomaITp7iM+ZnKnDTlSQQD2EanBx1Fur45EohLgxulHyzdV3EScEPEP/J1wH/hqFrrzSD5/f1",
+      "expires": "2026-12-31"
+    }
+  ],
+  "offer": {
+    "title": "50% Off",
+    "titleFa": "۵۰٪ تخفیف",
+    "text": "Half price on your first subscription.",
+    "textFa": "اولین اشتراک شما با نصف قیمت.",
+    "price": "",
+    "endsAt": "2026-12-31T23:59:00Z"
+  }
+}
