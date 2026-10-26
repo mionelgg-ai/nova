@@ -1,4 +1,0 @@
--keep class libv2ray.** { *; }
--keep class go.** { *; }
--dontwarn go.**
--keep class app.nova.vpn.core.** { *; }
