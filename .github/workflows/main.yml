@@ -28,6 +28,16 @@ jobs:
           gh release download --repo 2dust/AndroidLibXrayLite --pattern 'libv2ray.aar' --dir NovaVPN/app/libs --clobber
           ls -la NovaVPN/app/libs
 
+      - name: Download geoip.dat (Iran direct routing)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p NovaVPN/app/src/main/assets/geo
+          gh release download --repo Chocolate4U/Iran-v2ray-rules --pattern 'geoip.dat' --dir NovaVPN/app/src/main/assets/geo --clobber \
+            || gh release download --repo Loyalsoldier/v2ray-rules-dat --pattern 'geoip.dat' --dir NovaVPN/app/src/main/assets/geo --clobber
+          ls -la NovaVPN/app/src/main/assets/geo
+
       - name: Show libv2ray API (for debugging)
         continue-on-error: true
         run: |
