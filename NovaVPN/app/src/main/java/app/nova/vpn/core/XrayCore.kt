@@ -31,7 +31,7 @@ object XrayCore {
         Thread { copyGeo(context) }.start()
     }
 
-    /** assets/geo/*.dat (downloaded by the GitHub workflow) -> filesDir, once per app version. */
+    /** Copies the .dat files from assets/geo (downloaded by the GitHub workflow) to filesDir, once per app version. */
     private fun copyGeo(context: Context) {
         runCatching {
             val names = context.assets.list("geo")?.filter { it.endsWith(".dat") }.orEmpty()

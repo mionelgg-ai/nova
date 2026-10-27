@@ -20,6 +20,7 @@ import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.CompositionLocalProvider
@@ -27,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
@@ -165,7 +165,6 @@ private fun OnbPageContent(page: OnbPage, index: Int, pager: androidx.compose.fo
         animationSpec = infiniteRepeatable(tween(2600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "bob"
     )
-    val density = LocalDensity.current
 
     Column(Modifier.fillMaxSize()) {
         Box(
@@ -180,7 +179,7 @@ private fun OnbPageContent(page: OnbPage, index: Int, pager: androidx.compose.fo
             Image(
                 painterResource(page.image), null,
                 Modifier.fillMaxSize()
-                    .graphicsLayer { translationY = with(density) { bob.dp.toPx() } }
+                    .graphicsLayer { translationY = bob * density }
             )
         }
         Column(

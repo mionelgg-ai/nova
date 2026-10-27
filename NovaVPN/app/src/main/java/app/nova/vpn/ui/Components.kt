@@ -26,6 +26,20 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.nova.vpn.R
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import kotlinx.coroutines.launch
 import app.nova.vpn.core.VpnStatus
 import app.nova.vpn.data.flagEmoji
 
@@ -116,6 +130,11 @@ fun PowerButton(status: VpnStatus, onClick: () -> Unit) {
     }
 }
 
+/**
+ * Bottom navigation. Every item owns a full quarter of the bar (icon + all the space around it is tappable).
+ * The lime pill is drawn as one shape whose two edges move with different springs: the leading edge shoots
+ * ahead and the trailing edge lags and wobbles, so it stretches and snaps back like a water drop.
+ */
 @Composable
 fun BottomBar(selected: Int, onSelect: (Int) -> Unit) {
     val items = listOf(
@@ -124,26 +143,83 @@ fun BottomBar(selected: Int, onSelect: (Int) -> Unit) {
         Icons.Rounded.BarChart to R.string.nav_stats,
         Icons.Rounded.Person to R.string.nav_profile,
     )
-    val shape = RoundedCornerShape(30.dp)
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)
-            .clip(shape).background(NovaColors.Surface).border(1.dp, NovaColors.Border, shape).padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    val shape = RoundedCornerShape(33.dp)
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val density = LocalDensity.current
+
+    val left = remember { Animatable(0f) }
+    val right = remember { Animatable(0f) }
+    var barW by remember { mutableIntStateOf(0) }
+    var placed by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selected, barW, rtl) {
+        if (barW == 0) return@LaunchedEffect
+        val cell = barW / items.size.toFloat()
+        val extra = with(density) { 12.dp.toPx() }
+        val pad = with(density) { 5.dp.toPx() }
+        val idx = if (rtl) items.size - 1 - selected else selected
+        val tl = maxOf(idx * cell - extra, pad)
+        val tr = minOf((idx + 1) * cell + extra, barW - pad)
+        if (!placed) {
+            left.snapTo(tl); right.snapTo(tr); placed = true
+            return@LaunchedEffect
+        }
+        val movingRight = tl > left.value
+        val fast = spring<Float>(dampingRatio = 0.62f, stiffness = 650f)
+        val slow = spring<Float>(dampingRatio = 0.50f, stiffness = 150f)
+        launch { left.animateTo(tl, if (movingRight) slow else fast) }
+        launch { right.animateTo(tr, if (movingRight) fast else slow) }
+    }
+
+    Box(
+        Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp).height(66.dp)
+            .onSizeChanged { barW = it.width }
+            .clip(shape).background(NovaColors.Surface).border(1.dp, NovaColors.Border, shape)
     ) {
-        items.forEachIndexed { i, (icon, label) ->
-            val sel = i == selected
-            Row(
-                Modifier.clip(RoundedCornerShape(24.dp))
-                    .background(if (sel) NovaColors.Lime else Color.Transparent)
-                    .clickable { onSelect(i) }
-                    .padding(horizontal = if (sel) 18.dp else 14.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(icon, null, tint = if (sel) NovaColors.Bg else NovaColors.Dim, modifier = Modifier.size(22.dp))
-                if (sel) {
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(label), color = NovaColors.Bg, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, maxLines = 1)
+        Canvas(Modifier.matchParentSize()) {
+            val padY = 5.dp.toPx()
+            val baseH = size.height - 2 * padY
+            val w = (right.value - left.value).coerceAtLeast(1f)
+            val baseW = size.width / items.size + 24.dp.toPx()
+            val stretch = (w / baseW - 1f).coerceIn(0f, 1f)
+            val h = baseH * (1f - 0.12f * stretch)          // a stretched drop is thinner
+            val top = (size.height - h) / 2f
+            // soft glow + the pill itself
+            drawRoundRect(
+                NovaColors.Lime.copy(alpha = 0.16f),
+                topLeft = Offset(left.value - 5.dp.toPx(), top - 5.dp.toPx()),
+                size = Size(w + 10.dp.toPx(), h + 10.dp.toPx()),
+                cornerRadius = CornerRadius((h + 10.dp.toPx()) / 2f)
+            )
+            drawRoundRect(
+                NovaColors.Lime, topLeft = Offset(left.value, top), size = Size(w, h),
+                cornerRadius = CornerRadius(h / 2f)
+            )
+        }
+        Row(Modifier.matchParentSize()) {
+            items.forEachIndexed { i, (icon, label) ->
+                val sel = i == selected
+                val tint by animateColorAsState(if (sel) NovaColors.Bg else NovaColors.Dim, tween(250), label = "tint")
+                Box(
+                    Modifier.weight(1f).fillMaxHeight().clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { onSelect(i) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(Modifier.wrapContentWidth(unbounded = true), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
+                        AnimatedVisibility(
+                            visible = sel,
+                            enter = fadeIn(tween(220, delayMillis = 120)) + expandHorizontally(tween(300)),
+                            exit = fadeOut(tween(100)) + shrinkHorizontally(tween(220)),
+                        ) {
+                            Text(
+                                stringResource(label), Modifier.padding(start = 6.dp), color = NovaColors.Bg,
+                                fontWeight = FontWeight.SemiBold, fontSize = 12.sp, maxLines = 1, softWrap = false
+                            )
+                        }
+                    }
                 }
             }
         }
