@@ -49,6 +49,32 @@ object Prefs {
         get() = sp.getLong("bonus_until", 0L)
         set(v) = sp.edit().putLong("bonus_until", v).apply()
 
+    // ---- account (placeholder sign-in; becomes real when the backend exists)
+    var signedIn: Boolean
+        get() = sp.getBoolean("signed_in", false)
+        set(v) = sp.edit().putBoolean("signed_in", v).apply()
+
+    /** "google" | "email" */
+    var authMethod: String
+        get() = sp.getString("auth_method", "email") ?: "email"
+        set(v) = sp.edit().putString("auth_method", v).apply()
+
+    var userName: String
+        get() = sp.getString("user_name", "") ?: ""
+        set(v) = sp.edit().putString("user_name", v).apply()
+
+    var userEmail: String
+        get() = sp.getString("user_email", "") ?: ""
+        set(v) = sp.edit().putString("user_email", v).apply()
+
+    var avatarVersion: Int
+        get() = sp.getInt("avatar_version", 0)
+        set(v) = sp.edit().putInt("avatar_version", v).apply()
+
+    fun signOut() {
+        sp.edit().putBoolean("signed_in", false).putString("user_name", "").putString("user_email", "").apply()
+    }
+
     var geoVersion: Int
         get() = sp.getInt("geo_version", 0)
         set(v) = sp.edit().putInt("geo_version", v).apply()

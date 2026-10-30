@@ -127,4 +127,23 @@
     <string name="notif_expiry_title">Subscription ending soon</string>
     <string name="notif_expiry_text">Your premium plan ends in %d days. Tap to renew.</string>
     <string name="notice_open">Open</string>
+
+    <!-- plan builder -->
+    <string name="plan_title">Build your plan</string>
+    <string name="plan_data">Data</string>
+    <string name="plan_duration">Duration</string>
+    <string name="plan_users">Simultaneous users</string>
+    <string name="plan_total">Total price</string>
+    <string name="plan_buy">Buy</string>
+    <string name="gb_fmt">%d GB</string>
+    <string name="months_fmt">%d mo</string>
+    <string name="users_fmt">%d</string>
+    <string name="price_unit">Toman</string>
+    <string name="order_copied">Order details copied. Paste them in the Telegram chat.</string>
+    <string name="settings_title">Settings</string>
+
+    <!-- usage card (placeholder numbers) -->
+    <string name="usage_remaining">Remaining data</string>
+    <string name="usage_days">Days left</string>
+    <string name="usage_gb_fmt">%1$.1f / %2$d GB</string>
 </resources>

@@ -65,3 +65,9 @@ python tools/build_config.py tools/servers.source.json servers.json
 
 ## ۸) ساخت APK
 `Build → Generate Signed App Bundle / APK`.
+
+## تنظیمات پیشرفته (چرخ‌دنده در پروفایل)
+بخش‌های بازشونده مثل v2rayNG: Tunnel، DNS، Core، Mux، Fragment، Observatory، Advanced. همه گزینه‌ها روی کانفیگ Xray و تونل اعمال می‌شوند.
+- حالت **Proxy** نیازی به مجوز VPN ندارد؛ فقط پروکسی محلی SOCKS5/HTTP باز می‌شود.
+- گزینه‌های Hev TUN، حالت Root و تست همزمان تأخیر در این نسخه نیستند (به کتابخانه بومی یا دسترسی root نیاز دارند).
+- ورود با گوگل/ایمیل فعلاً **ساختگی** است (هیچ‌چیز ارسال نمی‌شود) و کادر حجم صفحه اصلی مقدارهای نمونه دارد (`DemoAccount` در `UsageCard.kt`).

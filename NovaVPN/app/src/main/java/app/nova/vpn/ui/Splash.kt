@@ -18,8 +18,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.delay
@@ -48,19 +48,24 @@ private fun DrawScope.drawLogo(cx: Float, cy: Float, s: Float, shield: Color, v:
 }
 
 /**
- * Lime screen with a dark logo -> a dark circle grows from the top-left corner (logo turns lime)
- * -> soft green glow -> everything fades into the app.
+ * dark screen + lime logo
+ *  -> a lime circle grows from the top-left corner (logo turns dark)
+ *  -> a dark circle grows from the bottom-right corner (logo turns lime again) + soft glow
+ *  -> fade into the app (which is dark).
  */
 @Composable
 fun SplashScreen(onFinished: () -> Unit) {
-    val reveal = remember { Animatable(0f) }
+    val toLime = remember { Animatable(0f) }
+    val toDark = remember { Animatable(0f) }
     val glow = remember { Animatable(0f) }
     val exit = remember { Animatable(1f) }
 
     LaunchedEffect(Unit) {
-        delay(450)
-        reveal.animateTo(1f, tween(850, easing = FastOutSlowInEasing))
-        glow.animateTo(1f, tween(700, easing = LinearEasing))
+        delay(400)
+        toLime.animateTo(1f, tween(750, easing = FastOutSlowInEasing))
+        delay(180)
+        toDark.animateTo(1f, tween(800, easing = FastOutSlowInEasing))
+        glow.animateTo(1f, tween(650, easing = LinearEasing))
         delay(200)
         exit.animateTo(0f, tween(450))
         onFinished()
@@ -75,14 +80,23 @@ fun SplashScreen(onFinished: () -> Unit) {
         val h = size.height
         val cx = w / 2
         val cy = h / 2
-        val s = (w * 0.24f / 40f) * (0.94f + 0.06f * reveal.value)
+        val s = (w * 0.24f / 40f) * (0.94f + 0.06f * toLime.value)
         val maxR = hypot(w, h)
 
-        drawRect(NovaColors.Lime)
-        drawLogo(cx, cy, s, NovaColors.Bg, NovaColors.Lime)
+        // 1) dark with a lime logo
+        drawRect(NovaColors.Bg)
+        drawLogo(cx, cy, s, NovaColors.Lime, NovaColors.Bg)
 
-        val circle = Path().apply { addOval(Rect(Offset(0f, 0f), reveal.value * maxR)) }
-        clipPath(circle) {
+        // 2) lime floods in from the top-left
+        val lime = Path().apply { addOval(Rect(Offset(0f, 0f), toLime.value * maxR)) }
+        clipPath(lime) {
+            drawRect(NovaColors.Lime)
+            drawLogo(cx, cy, s, NovaColors.Bg, NovaColors.Lime)
+        }
+
+        // 3) dark returns from the bottom-right
+        val dark = Path().apply { addOval(Rect(Offset(w, h), toDark.value * maxR)) }
+        clipPath(dark) {
             drawRect(NovaColors.Bg)
             val glowR = 40 * s * 2.2f
             drawCircle(

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.ProxyInfo
 import android.net.TrafficStats
 import android.net.VpnService
 import android.os.Build
@@ -17,6 +18,7 @@ import androidx.core.app.NotificationCompat
 import app.nova.vpn.Cfg
 import app.nova.vpn.MainActivity
 import app.nova.vpn.R
+import app.nova.vpn.data.AppSettings
 import app.nova.vpn.data.Prefs
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -56,8 +58,8 @@ class AppVpnService : VpnService() {
                 val names = intent.getStringArrayListExtra(EXTRA_NAMES).orEmpty()
                 val ids = intent.getStringArrayListExtra(EXTRA_IDS).orEmpty()
                 val protos = intent.getStringArrayListExtra(EXTRA_PROTOS).orEmpty()
-                val split = intent.getStringArrayListExtra(EXTRA_SPLIT).orEmpty()
-                if (configs.isEmpty()) stopVpn() else startVpn(configs, names, ids, protos, split)
+                val httpPort = intent.getIntExtra(EXTRA_HTTP_PORT, 10809)
+                if (configs.isEmpty()) stopVpn() else startVpn(configs, names, ids, protos, httpPort)
             }
         }
         return START_NOT_STICKY
@@ -66,7 +68,7 @@ class AppVpnService : VpnService() {
     // ------------------------------------------------------------------ connect
 
     private fun startVpn(
-        configs: List<String>, names: List<String>, ids: List<String>, protos: List<String>, split: List<String>,
+        configs: List<String>, names: List<String>, ids: List<String>, protos: List<String>, httpPort: Int,
     ) {
         connectJob?.cancel()
         VpnState.status.value = VpnStatus.Connecting
@@ -74,7 +76,7 @@ class AppVpnService : VpnService() {
 
         connectJob = scope.launch {
             try {
-                if (tun == null) tun = buildTun(split) ?: error("VPN permission revoked")
+                if (AppSettings.vpnMode && tun == null) tun = buildTun(httpPort) ?: error("VPN permission revoked")
 
                 var chosen = -1
                 for (i in configs.indices) {
@@ -120,34 +122,55 @@ class AppVpnService : VpnService() {
         }
     }
 
-    private fun buildTun(split: List<String>): ParcelFileDescriptor? {
+    private fun buildTun(httpPort: Int): ParcelFileDescriptor? {
         val b = Builder()
             .setSession(getString(R.string.app_name))
-            .setMtu(1500)
-            .addAddress("172.19.0.1", 30)
-            .addAddress("fdfe:dcba:9876::1", 126)
-            .addRoute("0.0.0.0", 0)
-            .addRoute("::", 0)
-            .addDnsServer("1.1.1.1")
-            .addDnsServer("8.8.8.8")
-        // Xray's own outbound sockets must not loop back into the tunnel.
-        b.addDisallowedApplication(packageName)
-        // Split tunneling: these apps bypass the VPN.
-        for (pkg in split) runCatching { b.addDisallowedApplication(pkg) }
+            .setMtu(AppSettings.mtu)
+            .addAddress(AppSettings.vpnAddress + ".1", 30)
+
+        // routes: everything, or everything except the LAN ranges
+        if (AppSettings.bypassLan) {
+            for ((ip, prefix) in NetUtil.routesBypassingLan()) b.addRoute(ip, prefix)
+        } else {
+            b.addRoute("0.0.0.0", 0)
+        }
+        if (AppSettings.ipv6) {
+            b.addAddress("fdfe:dcba:9876::1", 126)
+            b.addRoute("::", 0)
+        }
+
+        // DNS the phone itself uses inside the VPN
+        val dns = AppSettings.vpnDns
+        if (!runCatching { b.addDnsServer(dns) }.isSuccess) b.addDnsServer("1.1.1.1")
+
+        // per-app: either "these apps bypass the VPN" or "only these apps use the VPN"
+        val apps = if (AppSettings.perApp) Prefs.splitApps else emptySet()
+        if (AppSettings.perAppMode == "proxy" && apps.isNotEmpty()) {
+            for (pkg in apps) runCatching { b.addAllowedApplication(pkg) }
+        } else {
+            // Xray's own sockets must never loop back into the tunnel
+            b.addDisallowedApplication(packageName)
+            for (pkg in apps) runCatching { b.addDisallowedApplication(pkg) }
+        }
+
+        // let browsers use the local HTTP proxy directly (Android 10+)
+        if (Build.VERSION.SDK_INT >= 29 && AppSettings.httpToVpn && AppSettings.bool(AppSettings.K.LOCAL_PROXY)) {
+            runCatching { b.setHttpProxy(ProxyInfo.buildDirectProxy("127.0.0.1", httpPort)) }
+        }
         return b.establish()
     }
 
     /** Starts Xray on a fresh duplicate of the tun fd. */
     private fun startCore(config: String): Boolean = runCatching {
         XrayCore.stop()
-        val fd = ParcelFileDescriptor.dup(tun!!.fileDescriptor).detachFd()
+        val fd = if (AppSettings.vpnMode) ParcelFileDescriptor.dup(tun!!.fileDescriptor).detachFd() else 0
         XrayCore.start(config, fd)
     }.isSuccess
 
     /** Real request through the proxy; false if it fails or takes too long. */
     private suspend fun probe(): Boolean {
         val d = scope.async(Dispatchers.IO) {
-            runCatching { XrayCore.measureDelay(Cfg.PROBE_URL) }.getOrDefault(-1L)
+            runCatching { XrayCore.measureDelay(AppSettings.probeUrl) }.getOrDefault(-1L)
         }
         val ms = withTimeoutOrNull(Cfg.PROBE_TIMEOUT_MS) { d.await() } ?: -1L
         return ms >= 0
@@ -302,7 +325,7 @@ class AppVpnService : VpnService() {
         const val EXTRA_NAMES = "names"
         const val EXTRA_IDS = "ids"
         const val EXTRA_PROTOS = "protos"
-        const val EXTRA_SPLIT = "split"
+        const val EXTRA_HTTP_PORT = "http_port"
         private const val CHANNEL = "vpn"
         private const val NOTIF_ID = 1
     }

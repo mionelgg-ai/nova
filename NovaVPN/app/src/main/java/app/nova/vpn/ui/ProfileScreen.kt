@@ -1,7 +1,9 @@
 package app.nova.vpn.ui
 
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,58 +13,78 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.os.LocaleListCompat
 import app.nova.vpn.BuildConfig
 import app.nova.vpn.MainViewModel
 import app.nova.vpn.R
+import app.nova.vpn.data.Avatar
 import app.nova.vpn.data.Jalali
 import app.nova.vpn.data.Prefs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ProfileScreen(
     vm: MainViewModel,
     onTelegram: () -> Unit,
     onShare: () -> Unit,
-    onSplit: () -> Unit,
     onPrivacy: () -> Unit,
+    onSettings: () -> Unit,
+    onSignOut: () -> Unit,
 ) {
     val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
     val premium by vm.premium.collectAsState()
     val refreshing by vm.refreshing.collectAsState()
     val lang = LocalConfiguration.current.locales[0].language
-    val bypass by vm.bypassIran.collectAsState()
-    val splitCount = Prefs.splitApps.size
+    var avatarVersion by remember { mutableIntStateOf(Prefs.avatarVersion) }
+    val canPickPhoto = Prefs.authMethod == "email"
+
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) scope.launch {
+            val ok = withContext(Dispatchers.IO) { Avatar.save(ctx, uri) }
+            if (ok) { Prefs.avatarVersion = Prefs.avatarVersion + 1; avatarVersion = Prefs.avatarVersion }
+        }
+    }
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(top = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(stringResource(R.string.profile_title), fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Spacer(Modifier.size(44.dp))
+            Text(
+                stringResource(R.string.profile_title), Modifier.weight(1f), textAlign = TextAlign.Center,
+                fontSize = 22.sp, fontWeight = FontWeight.SemiBold
+            )
+            CircleIconButton(Icons.Rounded.Settings, onSettings)
+        }
         Spacer(Modifier.height(20.dp))
 
         Box(contentAlignment = Alignment.BottomCenter) {
-            Box(
-                Modifier.size(96.dp).clip(CircleShape).background(NovaColors.Surface)
-                    .border(2.dp, if (premium.active) NovaColors.Lime else NovaColors.Border, CircleShape),
-                contentAlignment = Alignment.Center
-            ) { LogoMark(44.dp) }
+            AvatarView(
+                size = 96.dp, version = avatarVersion, ring = if (premium.active) NovaColors.Lime else NovaColors.Border,
+                onClick = if (canPickPhoto) ({ picker.launch("image/*") }) else null
+            )
             if (premium.active) {
                 Text(
                     stringResource(R.string.pro), color = NovaColors.Bg, fontSize = 11.sp, fontWeight = FontWeight.Bold,
@@ -72,14 +94,17 @@ fun ProfileScreen(
             }
         }
         Spacer(Modifier.height(18.dp))
+        Text(Prefs.userName.ifBlank { "—" }, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Text(Prefs.userEmail, color = NovaColors.Dim, fontSize = 13.sp)
+        Spacer(Modifier.height(6.dp))
         Text(
             stringResource(if (premium.active) R.string.plan_pro else R.string.plan_free),
-            fontSize = 20.sp, fontWeight = FontWeight.SemiBold
+            color = if (premium.active) NovaColors.Lime else NovaColors.Dim, fontSize = 13.sp, fontWeight = FontWeight.Medium
         )
         if (premium.active) {
             Text(
                 premium.expires?.let { stringResource(R.string.plan_expires, Jalali.display(it, lang == "fa")) } ?: stringResource(R.string.plan_no_expiry),
-                color = NovaColors.Dim, fontSize = 13.sp
+                color = NovaColors.Dim, fontSize = 12.sp
             )
         }
 
@@ -96,45 +121,6 @@ fun ProfileScreen(
             Spacer(Modifier.height(12.dp))
         }
 
-        // language
-        NovaCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
-            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.Language, null, tint = NovaColors.Lime, modifier = Modifier.size(22.dp))
-                Spacer(Modifier.width(12.dp))
-                Text(stringResource(R.string.language), Modifier.weight(1f), fontSize = 15.sp)
-                LangChip("فارسی", lang == "fa") {
-                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("fa"))
-                }
-                Spacer(Modifier.width(8.dp))
-                LangChip("English", lang != "fa") {
-                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
-                }
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-
-        // bypass Iranian sites
-        NovaCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
-            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.AltRoute, null, tint = NovaColors.Lime, modifier = Modifier.size(22.dp))
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.bypass_ir), fontSize = 15.sp)
-                    Text(stringResource(R.string.bypass_ir_desc), color = NovaColors.Dim, fontSize = 12.sp)
-                }
-                Switch(
-                    checked = bypass, onCheckedChange = { vm.setBypassIran(it) },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = NovaColors.Bg, checkedTrackColor = NovaColors.Lime,
-                        uncheckedThumbColor = NovaColors.Dim, uncheckedTrackColor = NovaColors.Surface2,
-                        uncheckedBorderColor = NovaColors.Border
-                    )
-                )
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-        ActionRow(Icons.Rounded.CallSplit, stringResource(R.string.split_title), detail = if (splitCount > 0) stringResource(R.string.split_count, splitCount) else null, onClick = onSplit)
-        Spacer(Modifier.height(12.dp))
         ActionRow(Icons.AutoMirrored.Rounded.Send, stringResource(R.string.join_channel), onClick = onTelegram)
         Spacer(Modifier.height(12.dp))
         ActionRow(Icons.Rounded.Share, stringResource(R.string.share_app), onClick = onShare)
@@ -144,9 +130,10 @@ fun ProfileScreen(
         ActionRow(Icons.Rounded.Refresh, stringResource(R.string.refresh_servers), spinning = refreshing) {
             vm.refresh { ok -> Toast.makeText(ctx, if (ok) okMsg else failMsg, Toast.LENGTH_SHORT).show() }
         }
-
         Spacer(Modifier.height(12.dp))
         ActionRow(Icons.Rounded.PrivacyTip, stringResource(R.string.privacy_title), onClick = onPrivacy)
+        Spacer(Modifier.height(12.dp))
+        ActionRow(Icons.AutoMirrored.Rounded.Logout, tr("Sign out", "خروج از حساب"), onClick = onSignOut)
 
         Spacer(Modifier.height(20.dp))
         Text(stringResource(R.string.version_fmt, BuildConfig.VERSION_NAME), color = NovaColors.Dim, fontSize = 12.sp)
@@ -154,16 +141,35 @@ fun ProfileScreen(
     }
 }
 
+/** Picked photo if there is one, otherwise a Google-style initial or a plain placeholder. */
 @Composable
-private fun LangChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    Text(
-        label,
-        color = if (selected) NovaColors.Bg else NovaColors.Text,
-        fontSize = 13.sp, fontWeight = FontWeight.Medium,
-        modifier = Modifier.clip(RoundedCornerShape(16.dp))
-            .background(if (selected) NovaColors.Lime else NovaColors.Surface2)
-            .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 8.dp)
-    )
+fun AvatarView(size: Dp, version: Int, ring: androidx.compose.ui.graphics.Color, onClick: (() -> Unit)?) {
+    val ctx = LocalContext.current
+    val photo = remember(version) { Avatar.load(ctx) }
+    val google = Prefs.authMethod == "google"
+    Box(contentAlignment = Alignment.BottomEnd) {
+        Box(
+            Modifier.size(size).clip(CircleShape).background(NovaColors.Surface2)
+                .border(2.dp, ring, CircleShape)
+                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+            contentAlignment = Alignment.Center
+        ) {
+            when {
+                photo != null -> Image(photo, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                google -> Text(
+                    Prefs.userName.take(1).uppercase().ifBlank { "G" }, color = NovaColors.Lime,
+                    fontSize = (size.value * 0.42f).sp, fontWeight = FontWeight.Bold
+                )
+                else -> Icon(Icons.Rounded.Person, null, tint = NovaColors.Dim, modifier = Modifier.size(size * 0.55f))
+            }
+        }
+        if (onClick != null) {
+            Box(
+                Modifier.size(size * 0.3f).clip(CircleShape).background(NovaColors.Lime),
+                contentAlignment = Alignment.Center
+            ) { Icon(Icons.Rounded.CameraAlt, null, tint = NovaColors.Bg, modifier = Modifier.size(size * 0.17f)) }
+        }
+    }
 }
 
 @Composable

@@ -8,6 +8,6 @@
 
     <!-- Shown by the system before the first frame; MainActivity switches to Theme.Nova in onCreate -->
     <style name="Theme.Nova.Starting" parent="Theme.Nova">
-        <item name="android:windowBackground">@color/nova_lime</item>
+        <item name="android:windowBackground">@color/nova_bg</item>
     </style>
 </resources>

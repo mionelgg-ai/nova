@@ -21,8 +21,8 @@ Optional top-level fields (all optional):
   update      {"version":2,"name":"1.1.0","url":"https://t.me/..","force":false,"text":"","textFa":""}
               version = the app's versionCode; users with an older build get an update dialog
   shareText   text used by the "Invite friends" button
-  bonusMinutes  minutes of bonus access after a rewarded ad (default 60)
-Per-server optional fields:  "bonus": true   "tag": "new" | "busy" | "maintenance"
+  pricing     {"gb":5000,"month":10000,"extraUser":5000,"minGb":20,"maxGb":1000,"maxUsers":5}  prices in toman for the plan builder
+Per-server optional field:  "tag": "new" | "busy" | "maintenance"
 """
 import base64, hashlib, json, os, sys, time
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -68,9 +68,9 @@ def main(src_path: str, out_path: str) -> None:
         if s["id"] in seen:
             sys.exit(f"duplicate server id: {s['id']}")
         seen.add(s["id"])
-        premium = bool(s.get("premium", False))
-        bonus = bool(s.get("bonus", False)) and not premium      # bonus = free-key encryption, unlocked by a rewarded ad
-        key = premium_key if premium else free_key
+        premium = True            # every server is a paid server now (no free / bonus servers)
+        bonus = False
+        key = premium_key
         servers.append({
             "id": s["id"],
             "name": s["name"],
@@ -100,7 +100,7 @@ def main(src_path: str, out_path: str) -> None:
         "servers": servers,
         "codes": codes,
     }
-    for k in ("offer", "notice", "update", "shareText", "bonusMinutes"):
+    for k in ("offer", "notice", "update", "shareText", "bonusMinutes", "pricing"):
         if src.get(k):
             out[k] = src[k]
 

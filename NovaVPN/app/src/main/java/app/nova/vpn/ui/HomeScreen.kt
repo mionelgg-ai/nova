@@ -74,6 +74,9 @@ fun HomeScreen(
         }
     }
 
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+    // the power button takes whatever height is left, between 150 and 244 dp
+    val powerSize = (maxHeight - 440.dp).coerceIn(150.dp, 244.dp)
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 12.dp)) {
         // top bar
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -124,7 +127,7 @@ fun HomeScreen(
             }
         }
 
-        Spacer(Modifier.height(26.dp))
+        Spacer(Modifier.height(16.dp))
 
         // status
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -158,14 +161,18 @@ fun HomeScreen(
         )
 
         Spacer(Modifier.weight(1f))
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { PowerButton(status, onPower) }
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { PowerButton(status, onPower, powerSize) }
         Spacer(Modifier.weight(1f))
+
+        UsageCard()
+        Spacer(Modifier.height(10.dp))
 
         // speeds
         Row(Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
             SpeedItem(Modifier.weight(1f), Icons.Rounded.ArrowDownward, NovaColors.Lime, R.string.download, down)
             SpeedItem(Modifier.weight(1f), Icons.Rounded.ArrowUpward, NovaColors.Gold, R.string.upload, up)
         }
+    }
     }
 }
 

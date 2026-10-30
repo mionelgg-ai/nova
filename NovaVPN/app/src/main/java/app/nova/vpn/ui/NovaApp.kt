@@ -2,6 +2,8 @@ package app.nova.vpn.ui
 
 import android.Manifest
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
@@ -16,7 +18,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Campaign
-import androidx.compose.material.icons.rounded.CardGiftcard
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -37,14 +38,17 @@ import app.nova.vpn.MainViewModel
 import app.nova.vpn.R
 import app.nova.vpn.core.AdManager
 import app.nova.vpn.core.AppSignals
-import app.nova.vpn.core.Candidate
 import app.nova.vpn.core.VpnController
 import app.nova.vpn.core.VpnState
 import app.nova.vpn.core.VpnStatus
-import app.nova.vpn.core.XrayConfig
-import app.nova.vpn.core.XrayCore
-import app.nova.vpn.data.ConfigRepository
+import app.nova.vpn.core.ConnectPlanner
+import app.nova.vpn.data.AppSettings
+import app.nova.vpn.data.Avatar
+import app.nova.vpn.data.Jalali
 import app.nova.vpn.data.Prefs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -60,24 +64,26 @@ private fun Context.openLink(url: String) {
     }
 }
 
-/** splash on top of (onboarding | app) */
+/** splash on top of (onboarding -> sign-in -> app) */
 @Composable
 fun NovaRoot() {
     var onboardingDone by remember { mutableStateOf(Prefs.onboardingDone) }
+    var signedIn by remember { mutableStateOf(Prefs.signedIn) }
     var splashDone by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxSize()) {
-        if (onboardingDone) {
-            NovaApp(ready = splashDone)
-        } else {
-            OnboardingScreen(onFinish = { Prefs.onboardingDone = true; onboardingDone = true })
+        when {
+            !onboardingDone -> OnboardingScreen(onFinish = { Prefs.onboardingDone = true; onboardingDone = true })
+            !signedIn -> AuthFlow(onDone = { signedIn = true })
+            else -> NovaApp(ready = splashDone, onSignOut = { Prefs.signOut(); signedIn = false })
         }
         if (!splashDone) SplashScreen { splashDone = true }
     }
 }
 
 @Composable
-fun NovaApp(ready: Boolean = true, vm: MainViewModel = viewModel()) {
+fun NovaApp(ready: Boolean = true, onSignOut: () -> Unit = {}, vm: MainViewModel = viewModel()) {
     val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
     val activity = ctx.findActivity()
     val fa = LocalConfiguration.current.locales[0].language == "fa"
 
@@ -86,13 +92,11 @@ fun NovaApp(ready: Boolean = true, vm: MainViewModel = viewModel()) {
     val selected by vm.selected.collectAsState()
     val premium by vm.premium.collectAsState()
     val config by vm.config.collectAsState()
-    val bonusActive by vm.bonusActive.collectAsState()
     val autoConnect by AppSignals.autoConnect.collectAsState()
 
     var tab by rememberSaveable { mutableIntStateOf(0) }
-    var sub by rememberSaveable { mutableIntStateOf(0) }          // 0 none, 1 split tunneling, 2 privacy
+    var sub by rememberSaveable { mutableIntStateOf(0) }          // 0 none, 1 per-app list, 2 privacy, 3 settings
     var showPremium by remember { mutableStateOf(false) }
-    var showBonus by remember { mutableStateOf(false) }
     var adPending by remember { mutableStateOf(false) }
     var dismissedNotice by remember { mutableStateOf(Prefs.dismissedNotice) }
     var dismissedUpdate by remember { mutableIntStateOf(Prefs.dismissedUpdate) }
@@ -104,22 +108,19 @@ fun NovaApp(ready: Boolean = true, vm: MainViewModel = viewModel()) {
     fun startVpn() {
         val server = selected
         if (server == null) { toast(R.string.err_no_server); VpnState.status.value = VpnStatus.Disconnected; return }
-
-        val bypass = Prefs.bypassIran && XrayCore.geoReady
-        val others = config?.servers.orEmpty()
-            .filter { it.id != server.id && !it.inMaintenance && vm.canUse(it) }
-            .sortedBy { if (it.premium == server.premium) 0 else 1 }
-        val candidates = (listOf(server) + others).take(Cfg.MAX_CANDIDATES).mapNotNull { s ->
-            val link = ConfigRepository.linkFor(s) ?: return@mapNotNull null
-            val built = runCatching { XrayConfig.fromLink(link, bypass) }.getOrNull() ?: return@mapNotNull null
-            Candidate(s.id, s.name, built)
+        scope.launch {
+            // key derivation and DNS lookups happen off the main thread
+            val plan = withContext(Dispatchers.IO) { ConnectPlanner.build(server.id) }
+            if (plan.candidates.isEmpty()) {
+                toast(R.string.err_bad_link); VpnState.status.value = VpnStatus.Disconnected
+            } else {
+                VpnController.start(ctx, plan.candidates, plan.httpPort)
+            }
         }
-        if (candidates.isEmpty()) { toast(R.string.err_bad_link); VpnState.status.value = VpnStatus.Disconnected; return }
-        VpnController.start(ctx, candidates, Prefs.splitApps)
     }
 
     fun afterPermission() {
-        val skipAd = (premium.active && Cfg.SKIP_ADS_FOR_PREMIUM) || bonusActive
+        val skipAd = premium.active && Cfg.SKIP_ADS_FOR_PREMIUM
         if (skipAd || activity == null) { startVpn(); return }
         adPending = true
         VpnState.status.value = VpnStatus.Connecting
@@ -142,11 +143,8 @@ fun NovaApp(ready: Boolean = true, vm: MainViewModel = viewModel()) {
         if (status !is VpnStatus.Disconnected) { VpnController.stop(ctx); return }
         val server = selected ?: run { toast(R.string.err_no_server); return }
         if (server.inMaintenance) { toast(R.string.maint_toast); return }
-        if (!vm.canUse(server)) {
-            if (server.premium) showPremium = true else showBonus = true
-            return
-        }
-        val intent = VpnService.prepare(ctx)
+        if (!vm.canUse(server)) { showPremium = true; return }
+        val intent = if (AppSettings.vpnMode) VpnService.prepare(ctx) else null
         if (intent != null) permLauncher.launch(intent) else afterPermission()
     }
 
@@ -183,7 +181,22 @@ fun NovaApp(ready: Boolean = true, vm: MainViewModel = viewModel()) {
         runCatching { ctx.startActivity(Intent.createChooser(send, null)) }
     }
 
-    BackHandler(enabled = sub != 0) { sub = 0 }
+    // Buy: copy the order text (the admin reads it in Telegram) and open the channel
+    fun buyPlan(gb: Int, months: Int, users: Int, total: Long) {
+        val text = "سفارش اشتراک Nova VPN\n" +
+            "حجم: " + Jalali.toPersianDigits(gb.toString()) + " گیگابایت\n" +
+            "مدت: " + Jalali.toPersianDigits(months.toString()) + " ماه\n" +
+            "تعداد کاربر همزمان: " + Jalali.toPersianDigits(users.toString()) + "\n" +
+            "مبلغ: " + formatToman(total, true) + " تومان"
+        runCatching {
+            val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            cm.setPrimaryClip(ClipData.newPlainText("order", text))
+        }
+        toast(R.string.order_copied)
+        ctx.openLink(telegram)
+    }
+
+    BackHandler(enabled = sub != 0) { sub = if (sub == 1) 3 else 0 }
     BackHandler(enabled = sub == 0 && tab != 0) { tab = 0 }
 
     // ---- home banners
@@ -195,8 +208,9 @@ fun NovaApp(ready: Boolean = true, vm: MainViewModel = viewModel()) {
     Column(Modifier.fillMaxSize().systemBarsPadding()) {
         Box(Modifier.weight(1f)) {
             when {
-                sub == 1 -> SplitTunnelScreen(onBack = { sub = 0 })
+                sub == 1 -> SplitTunnelScreen(onBack = { sub = 3 })
                 sub == 2 -> PrivacyScreen(onBack = { sub = 0 })
+                sub == 3 -> SettingsScreen(onBack = { sub = 0 }, onPerApp = { sub = 1 })
                 tab == 0 -> HomeScreen(
                     vm, status, ::onPower,
                     onOpenServers = { tab = 1 },
@@ -221,14 +235,6 @@ fun NovaApp(ready: Boolean = true, vm: MainViewModel = viewModel()) {
                                     onClose = { Prefs.dismissedNotice = notice.id; dismissedNotice = notice.id }
                                 )
                             }
-                            if (bonusActive && !premium.active) {
-                                val left by vm.bonusLeftMs.collectAsState()
-                                val s = left / 1000
-                                InfoBanner(
-                                    text = stringResource(R.string.bonus_active, "%d:%02d".format(s / 60, s % 60)),
-                                    icon = Icons.Rounded.CardGiftcard, accent = NovaColors.Lime
-                                )
-                            }
                         }
                     },
                 )
@@ -236,16 +242,21 @@ fun NovaApp(ready: Boolean = true, vm: MainViewModel = viewModel()) {
                     vm,
                     onPicked = { tab = 0 },
                     onPremiumNeeded = { showPremium = true },
-                    onBonusNeeded = { showBonus = true },
                     onMaintenance = { toast(R.string.maint_toast) },
+                    onBuy = ::buyPlan,
                 )
                 tab == 2 -> StatsScreen(status)
                 else -> ProfileScreen(
                     vm,
                     onTelegram = { ctx.openLink(telegram) },
                     onShare = ::share,
-                    onSplit = { sub = 1 },
                     onPrivacy = { sub = 2 },
+                    onSettings = { sub = 3 },
+                    onSignOut = {
+                        if (status !is VpnStatus.Disconnected) VpnController.stop(ctx)
+                        Avatar.delete(ctx)
+                        onSignOut()
+                    },
                 )
             }
         }
@@ -253,35 +264,7 @@ fun NovaApp(ready: Boolean = true, vm: MainViewModel = viewModel()) {
     }
 
     if (showPremium) {
-        PremiumSheet(vm, onDismiss = { showPremium = false }, onSubscribe = { ctx.openLink(telegram) })
-    }
-
-    if (showBonus) {
-        val minutes = config?.bonusMinutes ?: Cfg.BONUS_MINUTES
-        AlertDialog(
-            onDismissRequest = { showBonus = false },
-            containerColor = NovaColors.Surface,
-            titleContentColor = NovaColors.Text,
-            textContentColor = NovaColors.Dim,
-            title = { Text(stringResource(R.string.bonus_title)) },
-            text = { Text(stringResource(R.string.bonus_text, minutes)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showBonus = false
-                    if (activity != null) {
-                        AdManager.showRewarded(activity) { ok ->
-                            if (ok) {
-                                vm.grantBonus(minutes)
-                                Toast.makeText(ctx, ctx.getString(R.string.bonus_unlocked, minutes), Toast.LENGTH_LONG).show()
-                            } else toast(R.string.ad_unavailable)
-                        }
-                    }
-                }) { Text(stringResource(R.string.bonus_watch), color = NovaColors.Lime) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showBonus = false }) { Text(stringResource(R.string.cancel), color = NovaColors.Dim) }
-            },
-        )
+        PremiumSheet(vm, onDismiss = { showPremium = false }, onSubscribe = { showPremium = false; sub = 0; tab = 1 })
     }
 
     // ---- update notice (optional or forced), controlled from servers.json

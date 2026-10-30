@@ -2,14 +2,24 @@ package app.nova.vpn.core
 
 import android.net.Uri
 import android.util.Base64
+import app.nova.vpn.data.CoreOptions
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** Turns a vless:// vmess:// trojan:// share link into a full Xray config (tun inbound). */
+/** Turns a vless:// vmess:// trojan:// share link + the user's settings into a full Xray config. */
 object XrayConfig {
     class Built(val protocol: String, val json: String)
 
-    fun fromLink(link: String, bypassIran: Boolean = false): Built {
+    /** The server host inside a share link (used to pre-resolve it). */
+    fun hostOf(link: String): String? = runCatching {
+        val l = link.trim()
+        if (l.startsWith("vmess://")) {
+            val body = l.removePrefix("vmess://").trim().replace('-', '+').replace('_', '/')
+            JSONObject(String(Base64.decode(body, Base64.DEFAULT))).optString("add").ifBlank { null }
+        } else Uri.parse(l).host
+    }.getOrNull()
+
+    fun fromLink(link: String, o: CoreOptions, resolvedHosts: Map<String, String> = emptyMap()): Built {
         val l = link.trim()
         val (protocol, outbound) = when {
             l.startsWith("vless://") -> "VLESS" to vless(l)
@@ -17,45 +27,124 @@ object XrayConfig {
             l.startsWith("trojan://") -> "Trojan" to trojan(l)
             else -> throw IllegalArgumentException("Unsupported link")
         }
+        applyOutboundOptions(outbound, o)
 
-        val config = JSONObject()
-            .put("log", JSONObject().put("loglevel", "warning"))
-            .put(
-                "inbounds", JSONArray().put(
-                    JSONObject()
-                        .put("tag", "tun-in")
-                        .put("protocol", "tun")
-                        .put("settings", JSONObject().put("name", "xray0").put("MTU", 1500).put("userLevel", 0))
-                        .put(
-                            "sniffing", JSONObject()
-                                .put("enabled", true)
-                                .put("destOverride", JSONArray().put("http").put("tls").put("quic"))
-                        )
+        // ---- inbounds
+        val destOverride = JSONArray().put("http").put("tls").put("quic")
+        if (o.fakeDns) destOverride.put("fakedns")
+        fun sniffing(): JSONObject {
+            val s = JSONObject().put("enabled", o.sniffing)
+            if (o.sniffing) s.put("destOverride", destOverride).put("routeOnly", o.routeOnly)
+            return s
+        }
+
+        val inbounds = JSONArray()
+        if (o.vpnMode) {
+            inbounds.put(
+                JSONObject()
+                    .put("tag", "tun-in").put("protocol", "tun")
+                    .put("settings", JSONObject().put("name", "xray0").put("MTU", o.mtu).put("userLevel", 0))
+                    .put("sniffing", sniffing())
+            )
+        }
+        if (o.localProxy) {
+            val listen = if (o.allowLan) "0.0.0.0" else "127.0.0.1"
+            val auth = o.proxyUser.isNotEmpty() && o.proxyPass.isNotEmpty()
+            val accounts = JSONArray().put(JSONObject().put("user", o.proxyUser).put("pass", o.proxyPass))
+            val socks = JSONObject().put("udp", o.socksUdp).put("userLevel", 0)
+            if (auth) socks.put("auth", "password").put("accounts", accounts) else socks.put("auth", "noauth")
+            inbounds.put(
+                JSONObject().put("tag", "socks-in").put("protocol", "socks").put("listen", listen)
+                    .put("port", o.socksPort).put("settings", socks).put("sniffing", sniffing())
+            )
+            val http = JSONObject().put("userLevel", 0)
+            if (auth) http.put("accounts", accounts)
+            inbounds.put(
+                JSONObject().put("tag", "http-in").put("protocol", "http").put("listen", listen)
+                    .put("port", o.httpPort).put("settings", http).put("sniffing", sniffing())
+            )
+        }
+
+        // ---- outbounds
+        val outbounds = JSONArray()
+            .put(outbound)
+            .put(JSONObject().put("tag", "direct").put("protocol", "freedom"))
+            .put(JSONObject().put("tag", "block").put("protocol", "blackhole"))
+        if (o.fragment) {
+            outbounds.put(
+                JSONObject().put("tag", "fragment").put("protocol", "freedom").put(
+                    "settings", JSONObject().put(
+                        "fragment", JSONObject().put("packets", o.fragPackets).put("length", o.fragLength).put("interval", o.fragInterval)
+                    )
                 )
             )
-            .put(
-                "outbounds", JSONArray()
-                    .put(outbound)
-                    .put(JSONObject().put("tag", "direct").put("protocol", "freedom"))
-                    .put(JSONObject().put("tag", "block").put("protocol", "blackhole"))
+        }
+        if (o.localDns) outbounds.put(JSONObject().put("tag", "dns-out").put("protocol", "dns"))
+
+        // ---- routing
+        val rules = JSONArray()
+        if (o.localDns) {
+            rules.put(JSONObject().put("type", "field").put("port", "53").put("outboundTag", "dns-out"))
+        }
+        if (o.bypassIran) {
+            rules.put(JSONObject().put("type", "field").put("domain", JSONArray().put("domain:ir")).put("outboundTag", "direct"))
+            rules.put(JSONObject().put("type", "field").put("ip", JSONArray().put("geoip:ir")).put("outboundTag", "direct"))
+        }
+
+        // ---- dns
+        val servers = JSONArray()
+        if (o.fakeDns) servers.put("fakedns")
+        servers.put(o.remoteDns)
+        if (o.localDns && o.directDns.isNotEmpty()) {
+            servers.put(
+                JSONObject().put("address", o.directDns).put("domains", JSONArray().put("domain:ir")).put("skipFallback", true)
             )
-            .put("dns", JSONObject().put("servers", JSONArray().put("1.1.1.1").put("8.8.8.8")))
-            .put("routing", JSONObject().put("domainStrategy", "IPIfNonMatch").put("rules", rules(bypassIran)))
+        }
+        val hosts = JSONObject()
+        // keep the well-known DoH names resolvable without asking DNS (avoids a chicken-and-egg problem)
+        hosts.put("cloudflare-dns.com", JSONArray().put("1.1.1.1").put("1.0.0.1"))
+        hosts.put("dns.google", JSONArray().put("8.8.8.8").put("8.8.4.4"))
+        hosts.put("dns.alidns.com", JSONArray().put("223.5.5.5").put("223.6.6.6"))
+        for ((k, v) in resolvedHosts) hosts.put(k, v)
+        for ((k, v) in o.hosts) hosts.put(k, v)
+        val dns = JSONObject().put("hosts", hosts).put("servers", servers)
+            .put("queryStrategy", if (o.preferIpv6) "UseIP" else "UseIPv4")
+
+        val config = JSONObject()
+            .put("log", JSONObject().put("loglevel", o.logLevel))
+            .put("inbounds", inbounds)
+            .put("outbounds", outbounds)
+            .put("dns", dns)
+            .put("routing", JSONObject().put("domainStrategy", "IPIfNonMatch").put("rules", rules))
+        if (o.fakeDns) {
+            config.put("fakedns", JSONArray().put(JSONObject().put("ipPool", "198.18.0.0/15").put("poolSize", 65535)))
+        }
+        if (o.observatory && o.obsUrl.isNotEmpty()) {
+            config.put(
+                "observatory", JSONObject().put("subjectSelector", JSONArray().put("proxy"))
+                    .put("probeUrl", o.obsUrl).put("probeInterval", o.obsInterval)
+            )
+        }
         return Built(protocol, config.toString())
     }
 
-    /** Iranian sites/apps go straight out (needs geoip.dat in filesDir — the caller checks that). */
-    private fun rules(bypassIran: Boolean): JSONArray {
-        val rules = JSONArray()
-        if (bypassIran) {
-            rules.put(
-                JSONObject().put("type", "field").put("domain", JSONArray().put("domain:ir")).put("outboundTag", "direct")
-            )
-            rules.put(
-                JSONObject().put("type", "field").put("ip", JSONArray().put("geoip:ir")).put("outboundTag", "direct")
+    /** Mux and TLS fragment are properties of the proxy outbound. */
+    private fun applyOutboundOptions(outbound: JSONObject, o: CoreOptions) {
+        val hasFlow = outbound.toString().contains("\"flow\":\"")
+        if (o.mux && !hasFlow) {
+            outbound.put(
+                "mux", JSONObject().put("enabled", true).put("concurrency", o.muxConcurrency)
+                    .put("xudpConcurrency", o.xudpConcurrency).put("xudpProxyUDP443", o.xudpQuic)
             )
         }
-        return rules
+        if (o.fragment) {
+            val ss = outbound.optJSONObject("streamSettings")
+            if (ss != null && ss.optString("security") != "none") {
+                val sockopt = ss.optJSONObject("sockopt") ?: JSONObject()
+                sockopt.put("dialerProxy", "fragment")
+                ss.put("sockopt", sockopt)
+            }
+        }
     }
 
     // ---------------------------------------------------------------- protocols

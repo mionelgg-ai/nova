@@ -1,7 +1,7 @@
 {
   "v": 1,
-  "rev": 1793012494,
-  "salt": "gTi/oAl16T5aXp0NLlkc1A==",
+  "rev": 1793216822,
+  "salt": "OQ5GCaP3MJsBNKUD4RpKsw==",
   "telegram": "https://t.me/YOUR_CHANNEL",
   "servers": [
     {
@@ -10,10 +10,10 @@
       "nameFa": "کانادا",
       "cc": "CA",
       "city": "Toronto",
-      "premium": false,
+      "premium": true,
       "bonus": false,
       "tag": "",
-      "link": "MeYY7sDXk2esVf9YIswhoOTnM+NLSxaN94WzQRRKwk7PAVaiNzo54GlV+Q8/yfNltNgscRp1hn/67hgX8R7CI7gU9koTFH1F6A0ln10bJCTmwVMja2hP1I84ZahZNn4B6ZdizXdoVNaeouaDLlhSd00ibuLo7m2YTKKafqrssHcqaZ2wM9YybqIWDStmEO0jFg=="
+      "link": "5JkrwIXH5gOij6GdNHNzWaT75zYjyiBLgQKOBUSyR1UwulthQJJXIpcw4TmHIuDhO25YJacK71HpvY7JjKBiffFmqQNrikvo/VlSZs3RzPUOu7Nq3QkKlBVSs6R1yDkOqKUZT6tYzx9NDKVaaWw9bm8rVwzKiaQ2/m9Wdj/uz6XiVeke5o9X77nvy1j/8s28HQ=="
     },
     {
       "id": "pl",
@@ -21,10 +21,10 @@
       "nameFa": "لهستان",
       "cc": "PL",
       "city": "Warsaw",
-      "premium": false,
+      "premium": true,
       "bonus": false,
       "tag": "",
-      "link": "tmwAEq3hpiKAXPHanvoBFcWLL5Jd/5CAHe6gxwUUt1G5XuXY7eOWp0+Se8cPGrklcJQQk3/5POhAFEKgzEMsevZSKmRdVmmbg6pYdy1NqSx1XrlCDlIIb7QH6PU0iaq696uKOORsCdnQsGakWaD5Tf2GYZk9kqxsJmHQ0iOL+Tz1K/g+KTqZjitPxsdFMkNGcA=="
+      "link": "KrlypuJlU7VhwJRQboy+UdVxXurcGEXBaFEea8nu72SZ2lYkx+gFZCbOyVA4gq5gw9MZSqbUWBA4oM/+8g76l2eL6YAGGMyE5X7kY1FMgnKT354HIuk2yKWAJpsc2hjM6c9tIyO3THDT51Z7eajWw4Vy8MVNafBgUMmw/cqreFLcFkZInnEUbNgo4OJ42Ees9Q=="
     },
     {
       "id": "nl",
@@ -32,10 +32,10 @@
       "nameFa": "هلند",
       "cc": "NL",
       "city": "Amsterdam",
-      "premium": false,
+      "premium": true,
       "bonus": false,
       "tag": "new",
-      "link": "TRR3YPUR5fVQoJymwSf1s4r0BZaSHy4zU9vaIUWiNdIVE2hJKvNR3BQEK22Gdz0ooMikJP6aV7K/H7Gesf3INwhvCcELQ4vDatNvwdqPSiwmdZcDHz5NH+HlaLkDq78npeZcu1CaerSZGa1fcYBneJ8LmnOLiIQhfseK6J7+h4VvwhEnDgjeo7Q75W+ebi/SWA=="
+      "link": "yPmugh//UTA2tOVrnX/rVEJrE3aNToTxwSTwIsLbNdE2+pcWuIg+VPk5iIvK9e5t1C9URbJlSb5IHeUfv6Mn4zNXXSsDVy/+Dt6y7M+mhi91fbzZ0o89hBcyONnd+Df8jFArZQesDvReWpoWFENv3hG24Qrn977WlOWDq5dy3GlvJnO6L+YgMI1E6QVRaCYe0A=="
     },
     {
       "id": "fi",
@@ -43,10 +43,10 @@
       "nameFa": "فنلاند",
       "cc": "FI",
       "city": "Helsinki",
-      "premium": false,
+      "premium": true,
       "bonus": false,
       "tag": "",
-      "link": "851tf7730IWq7E1dXH3NDwxn9UhC8pBr5VQFVPvagDZ/2EGqh7JXWMtpC4ElVMxM4tPRVWmkXuA2lW+9RYzH0+3xVX0y/J5lIVWN8vBQCW0YrTbyrTDn4uGfikbC010TCPrzdXf+xoK4nRyBu9X9PApdd36Wpi/WCrCYXW40QsUJ66jGm/0sEhxHqHcGXBZXQw=="
+      "link": "RdeRF04xIne4gx7kdvlTh45hU7fhmx/OSeBQc5tN8oFx/hJObSLa1XsV3y63qTXXaf6P0mSVJRlKgrb+Vc2YA0I6FVWF+si/F0+dEej5/UwgIuB52sjkO/OEuGKAH+2fm/MSLUAytRl7PAVTAsmhdi1pmp8r5gan6aBiU4+9YCf8BsZPr+kI6dXaABIf05GFNg=="
     },
     {
       "id": "se",
@@ -54,10 +54,10 @@
       "nameFa": "سوئد",
       "cc": "SE",
       "city": "Stockholm",
-      "premium": false,
+      "premium": true,
       "bonus": false,
       "tag": "busy",
-      "link": "CJShGv+7lRfIhvi9KHuQbtVLAs9oCLxdii7xUeKGAgMGP3h5HWhHDtFf9YU+ceQuZW2rQ4ZaOviEXuvvauiAeNYRXJqUkQeRSehjkrdn8idUWpGG1uuSkOXzMKYsOPZIUzn4ti7exOVj9GSrSdiLVTsjdfZ7KLjUaD51PCS186x+dm8d3046seGhvJKIExMHRQ=="
+      "link": "ahWnG2dEVXKpnu4Ba8/xSx/KvGpsw5TtqGGK+SCv2Em7eaTPOVCw7+nra48zrrHNelRCiXpkk5dAkieGRIYgWupsyiazgi033iZSPR3aRHKhlYn17hZ41hYrX2lx5aV1imKRnsV3m2iE7sz5ZeakbmJuMXxUIQ4bbDMs6DBv9A7JwXAKuIA/UJtVZcwFa3CdOw=="
     },
     {
       "id": "de",
@@ -68,7 +68,7 @@
       "premium": true,
       "bonus": false,
       "tag": "",
-      "link": "rgim3ZW3CaVjQQh/OvSbuE5YElIi7Iu1oiQl03BW9suaPJ3hltX4kC6+PE8/OuIrAc/mKhLL2B0eQHf2fFizh5B0M1Prpv8bPAS+T3MPT05HQsR7fUs/o2Fc9tdeCs491o7AaAIY1UoTITjrcrpugthgTIFfyzaILobzCRPqmhWpxHO5JN3db+T5kdlAfLQhJg=="
+      "link": "8esKJRxGrIF/iMmIaBZeGtZZHAp3pwONwHIlCpEfz7R0wX67Fh0Cp8zcgkHq9A4VVGh2Er3upB0iYRU/pLcrYpnGalRyjYBvhOvC3Z1IiIlPO4+IOrByjJBG3EP7r77xAtS9TvbUVQXJrzqT+zrlL3GHaJLttcAeTVkY5DiuZipbGxirPVcWJZFB0C7BfG2+wQ=="
     },
     {
       "id": "gb",
@@ -79,7 +79,7 @@
       "premium": true,
       "bonus": false,
       "tag": "",
-      "link": "U5QDO7tG/SfpUqq5c7ZjK1eowdjPtTiJGKtVf/QSvLAFUGgFVBN2d6f4+Tyu3kMMp62iE43oM8W9hH9qm76wmw2ekXTXZIdA+QKzgKNMZB+KOzw3LbLM0dNiZNmctpW3J1B50nvFJ/vKtTiLRfSEm9yEY7q191zxZBv+rip9LqTRNW8acj3phqOlqSvxO6Dc/g=="
+      "link": "KW/HIPtuqbhIlvrhfOTJDrC01PVRILfAGucsFCm7nD5/3QONc+vkTxNVo0dnpreLdPZREGHOERx9Eh/sMaXRMtjwRYt4G3t0E7sA0Trzmsku6DvSRMUZLCWwQMIpLdWCfk5OfI7MPyqaONYwaDILa+dSE6w4tx/aIQsINjW18wpA7TG8L7oRYDJhmPEcNytz3g=="
     },
     {
       "id": "us",
@@ -90,7 +90,7 @@
       "premium": true,
       "bonus": false,
       "tag": "",
-      "link": "4a+ckmFT9AdITdkMxBEibQYmHhGgSNupSAtYCM9WVcnbBe2YCWEnOPpbli74LudhyT4eZLGtpZNu52cP1nPjS48tQgT8P0SvnFCMNzr6mzKU7ciub3AvpcxqinXlfEEQVrvhe77bbACmalAwwFX1G7MYA7iU/ntalS9cN7BmLdcODY86S66IOGkIXXOs1sfWlA=="
+      "link": "lnikXZTGLxE1R4DU17IYI5V4b8GePGzYAZo/LEELpWzX1mG3tLCi8ovvDIE7wSTknZM9u4l2mq2S/erW+FeBKAyoqYEYX9R2OCinRpr1QWqpobXQfsHEtXS0Sneg20jq+swoKHBIYaZsTh7G+M+OlS1rFjDezi9u8rGRhn1eFfmmhR7Kt26lSpurTE0WwQVHhg=="
     },
     {
       "id": "tr",
@@ -101,7 +101,7 @@
       "premium": true,
       "bonus": false,
       "tag": "",
-      "link": "18A5Fd71bS3myXIscTkyaYycoCIhgx3ZVLNMQOzwhI039mcvAykLwDZNg2oxwT/Jl0HqD9yhfwf1/f1hrk+36mGUFwVfIuHg7Wg0TqINMYmcsUeGzt5kENOFrVhalXy8G4LP6Tb1rab23ETOv6IbxLugHp1DphANj5+EMV4B0a+t4KntV53t80xTkOVxBRSdjg=="
+      "link": "SCkmLhh8M+SiEkUSxt/GYt+EsQ4dddPb6SqGBzxm6JCv7o4PNnxZVz3+15C8d6ib3HLHYUwPP1EJNYjW4a2/8AdNvAZjThgtrTQ4Kq7NokeqxsKjO5wdUFfKxxeE5mHxUPuiEjcX4v0beetIyCo/eaWOOv4Ur2zR574kIyLhumUt7qzTFaDuwdgkw4AzqjQENQ=="
     },
     {
       "id": "ae",
@@ -112,7 +112,7 @@
       "premium": true,
       "bonus": false,
       "tag": "",
-      "link": "Mm7v53SXiUvbMlVHEDJ6OvoiJ2vklErm01YnJv/NQqjNJoxu1+6FTAhMOo6Y/OMKhiezd0FFy5++uxFRyxza4X+xn5/DOxFquGijXwBpG9ivGqmN2Ki8JAVWm4yevAXB65zqIht/HnZewNDenLpLwQyfaw0P+f2ltvrqkUCvT2gH3GEuw7M/3GhivdYc7kfnrw=="
+      "link": "sVBwk8BModNcgNewkGiGDThW+n8/d8wjNHDlK6hoIOBF3ThqVJW7crbC1r+vWfNHXS4FKfHolwwRfRI7kDkM1TqlxRYXzPwNtuei6hJGN0PWQIPg3/emeWuwmjEMEmnMKYpfEhh34GyyOHkOUZYOMVNAjaxH7ub4PnaKTEkcrYNr3KCR3TG8DMP6DkqOVYlMhw=="
     },
     {
       "id": "jp",
@@ -120,10 +120,10 @@
       "nameFa": "ژاپن",
       "cc": "JP",
       "city": "Tokyo",
-      "premium": false,
-      "bonus": true,
+      "premium": true,
+      "bonus": false,
       "tag": "",
-      "link": "5EIXxK3b2u+qC+Vc9DraR+ERRZ0zJZkcT6zjsS87i+OWN11OpP1kxwKHWmcmDZAkhId6cEE04SDPGL8WvyNSBnvLzZng4JqPsYgf+XdHXOM1WIMBO7UO5iMHDkTj4MR3vO9zvS8i/khAjNVGvy2I0CsVVpsOwpp4Ch2YnmVIpOCQoLmbeGNoJMAQz7KU6qjRbA=="
+      "link": "6Q/JA9A6JSoI8ne/VxyBLI4T+c+3DfOsGDoSuGKoetWf43pxUMJB5gYenhTPfiH6EgUiFyt5aFbA14TVY/iG0lkzpQMnBG2elH+frF7OMUCHU7Kgy5NJpvsuDmdyxqG7U3BjNbIKuAPmMGS6HunNojViBEYtw7neJo/vSWBiGjmKD/A7VLxENnOd5lRZwcB23g=="
     },
     {
       "id": "sg",
@@ -131,21 +131,21 @@
       "nameFa": "سنگاپور",
       "cc": "SG",
       "city": "Singapore",
-      "premium": false,
-      "bonus": true,
+      "premium": true,
+      "bonus": false,
       "tag": "",
-      "link": "8zKAriVgMpitMcvnYW0pa2oV2Qy2WgV9eb1BszGWkWWShc92F+8Sikdy/CjN4idUXCsE116Vjs60hL/ppnlYUTi+tTS+m/OyE5p/TuzsG+5KrwVCe5j+aWTYS8BDMZm53ZU3W7ge5yRYaItks5WDrxXsPVDr/+MzASllp/UVtl6hDXZ/EjbPaqAOvLvl4A0VKQ=="
+      "link": "5ozMKg/c2KQ6yAJ2Z8TKsd68bBShW+2ea8kxaENL1uKU+aOLR7VJt7ASoVOf8W0aesi8krBWJ83Ni2tjbuUtVmmusJ4X5Q/IjORX6eXrkzkk1RczKSoYa2WPgYh6Mhh/lVGyqe39cnqKKfgTf8n69I/T3MCIh0XtzYjhOlYhzAUlICpsLd2L3z2iEGYHt7at+Q=="
     }
   ],
   "codes": [
     {
       "id": "e9348050",
-      "wrapped": "7u1BzGwLKylJ6d1ueeOluFyRlArA7F80vViqy/b/oh7b3vFIKFyXE8x5UtYBBN+uJHoe5Fs7RhqXm2ES",
+      "wrapped": "qGrOpfSO077vAJAyBOMe+/lkYiPMbz1qdZqkwJpuEZGU8CeHYbvHAaBntf3xneIubYcupsr2CAWqtush",
       "expires": "2027-12-31"
     },
     {
       "id": "d061705e",
-      "wrapped": "CCYlQFb9jQ93ec4+dV5EGIoQaVTMhBOzwSGdUjyNJUaTjpG3kDdsPA3RLaCUe3Skpp0/dSd8TRCsELlN",
+      "wrapped": "yD7JCHJMLbsWAGN6/j8U8Ekxy9xAhgO6j6wImZLDQo6gIgYRnKzkLliOsGKl7KF4Gc005nMV4retXtU8",
       "expires": "2026-12-31"
     }
   ],
@@ -171,5 +171,12 @@
     "textFa": ""
   },
   "shareText": "Nova VPN – fast & simple VPN: https://t.me/YOUR_CHANNEL",
-  "bonusMinutes": 60
+  "pricing": {
+    "gb": 5000,
+    "month": 10000,
+    "extraUser": 5000,
+    "minGb": 20,
+    "maxGb": 1000,
+    "maxUsers": 5
+  }
 }

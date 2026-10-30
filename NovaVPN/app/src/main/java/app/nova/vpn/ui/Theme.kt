@@ -15,6 +15,7 @@ object NovaColors {
     val Bg = Color(0xFF0A0B09)
     val Surface = Color(0xFF131512)
     val Surface2 = Color(0xFF1B1E19)
+    val BarBg = Color(0xFF1F211E)
     val Border = Color(0xFF2A2E26)
     val Lime = Color(0xFFB6FF1A)
     val Text = Color(0xFFF2F4EE)

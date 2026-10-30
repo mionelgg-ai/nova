@@ -105,7 +105,7 @@ fun SignalBars(ping: Int) {
 }
 
 @Composable
-fun PowerButton(status: VpnStatus, onClick: () -> Unit) {
+fun PowerButton(status: VpnStatus, onClick: () -> Unit, size: Dp = 244.dp) {
     val connected = status is VpnStatus.Connected
     val connecting = status is VpnStatus.Connecting
     val fill by animateColorAsState(if (connected) NovaColors.Lime else NovaColors.Surface2, tween(400), label = "fill")
@@ -120,21 +120,16 @@ fun PowerButton(status: VpnStatus, onClick: () -> Unit) {
     val ring = when { connected -> 0.30f; connecting -> 0.45f; else -> 0.12f }
     val s = if (connected || connecting) pulse else 1f
 
-    Box(Modifier.size(244.dp), contentAlignment = Alignment.Center) {
-        Box(Modifier.size(244.dp).scale(s).border(1.dp, NovaColors.Lime.copy(alpha = ring), CircleShape))
-        Box(Modifier.size(198.dp).scale(s).background(NovaColors.Lime.copy(alpha = ring / 2.5f), CircleShape))
+    Box(Modifier.size(size), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(size).scale(s).border(1.dp, NovaColors.Lime.copy(alpha = ring), CircleShape))
+        Box(Modifier.size(size * 0.81f).scale(s).background(NovaColors.Lime.copy(alpha = ring / 2.5f), CircleShape))
         Box(
-            Modifier.size(150.dp).clip(CircleShape).background(fill).clickable(onClick = onClick),
+            Modifier.size(size * 0.615f).clip(CircleShape).background(fill).clickable(onClick = onClick),
             contentAlignment = Alignment.Center
-        ) { Icon(Icons.Rounded.PowerSettingsNew, null, tint = icon, modifier = Modifier.size(62.dp)) }
+        ) { Icon(Icons.Rounded.PowerSettingsNew, null, tint = icon, modifier = Modifier.size(size * 0.254f)) }
     }
 }
 
-/**
- * Bottom navigation. Every item owns a full quarter of the bar (icon + all the space around it is tappable).
- * The lime pill is drawn as one shape whose two edges move with different springs: the leading edge shoots
- * ahead and the trailing edge lags and wobbles, so it stretches and snaps back like a water drop.
- */
 @Composable
 fun BottomBar(selected: Int, onSelect: (Int) -> Unit) {
     val items = listOf(
@@ -174,7 +169,7 @@ fun BottomBar(selected: Int, onSelect: (Int) -> Unit) {
     Box(
         Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp).height(66.dp)
             .onSizeChanged { barW = it.width }
-            .clip(shape).background(NovaColors.Surface).border(1.dp, NovaColors.Border, shape)
+            .clip(shape).background(NovaColors.BarBg).border(1.5.dp, NovaColors.Lime, shape)
     ) {
         Canvas(Modifier.matchParentSize()) {
             val padY = 5.dp.toPx()

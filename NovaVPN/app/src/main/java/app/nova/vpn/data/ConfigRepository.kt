@@ -83,8 +83,8 @@ object ConfigRepository {
                         nameFa = s.optString("nameFa", ""),
                         cc = s.getString("cc"),
                         city = s.optString("city", ""),
-                        premium = s.optBoolean("premium", false),
-                        bonus = s.optBoolean("bonus", false),
+                        premium = true,                 // no free / bonus servers any more
+                        bonus = false,
                         tag = s.optString("tag", ""),
                         linkEnc = s.getString("link"),
                     )
@@ -121,12 +121,19 @@ object ConfigRepository {
                 textFa = it.optString("textFa"),
             )
         }
+        val pricing = o.optJSONObject("pricing")?.let {
+            Pricing(
+                gb = it.optLong("gb", 5000), month = it.optLong("month", 10000), extraUser = it.optLong("extraUser", 5000),
+                minGb = it.optInt("minGb", 20), maxGb = it.optInt("maxGb", 1000), maxUsers = it.optInt("maxUsers", 5),
+            )
+        } ?: Pricing()
         return RemoteConfig(
             rev = o.optLong("rev", 0L),
             salt = salt,
             telegram = o.optString("telegram").ifBlank { Cfg.DEFAULT_TELEGRAM },
             shareText = o.optString("shareText"),
             bonusMinutes = o.optInt("bonusMinutes", Cfg.BONUS_MINUTES),
+            pricing = pricing,
             offer = offer,
             notice = notice,
             update = update,

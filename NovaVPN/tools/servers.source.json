@@ -16,7 +16,7 @@
       "nameFa": "کانادا",
       "cc": "CA",
       "city": "Toronto",
-      "premium": false,
+      "premium": true,
       "link": "vless://00000000-0000-0000-0000-000000000001@ca.example.com:443?type=ws&security=tls&sni=ca.example.com&path=%2Fws#ca"
     },
     {
@@ -25,7 +25,7 @@
       "nameFa": "لهستان",
       "cc": "PL",
       "city": "Warsaw",
-      "premium": false,
+      "premium": true,
       "link": "vless://00000000-0000-0000-0000-000000000002@pl.example.com:443?type=ws&security=tls&sni=pl.example.com&path=%2Fws#pl"
     },
     {
@@ -34,7 +34,7 @@
       "nameFa": "هلند",
       "cc": "NL",
       "city": "Amsterdam",
-      "premium": false,
+      "premium": true,
       "link": "vless://00000000-0000-0000-0000-000000000003@nl.example.com:443?type=ws&security=tls&sni=nl.example.com&path=%2Fws#nl",
       "tag": "new"
     },
@@ -44,7 +44,7 @@
       "nameFa": "فنلاند",
       "cc": "FI",
       "city": "Helsinki",
-      "premium": false,
+      "premium": true,
       "link": "vless://00000000-0000-0000-0000-000000000004@fi.example.com:443?type=ws&security=tls&sni=fi.example.com&path=%2Fws#fi"
     },
     {
@@ -53,7 +53,7 @@
       "nameFa": "سوئد",
       "cc": "SE",
       "city": "Stockholm",
-      "premium": false,
+      "premium": true,
       "link": "vless://00000000-0000-0000-0000-000000000005@se.example.com:443?type=ws&security=tls&sni=se.example.com&path=%2Fws#se",
       "tag": "busy"
     },
@@ -108,8 +108,7 @@
       "nameFa": "ژاپن",
       "cc": "JP",
       "city": "Tokyo",
-      "premium": false,
-      "bonus": true,
+      "premium": true,
       "link": "vless://00000000-0000-0000-0000-000000000021@jp.example.com:443?type=ws&security=tls&sni=jp.example.com&path=%2Fws#jp"
     },
     {
@@ -118,8 +117,7 @@
       "nameFa": "سنگاپور",
       "cc": "SG",
       "city": "Singapore",
-      "premium": false,
-      "bonus": true,
+      "premium": true,
       "link": "vless://00000000-0000-0000-0000-000000000022@sg.example.com:443?type=ws&security=tls&sni=sg.example.com&path=%2Fws#sg"
     }
   ],
@@ -149,5 +147,12 @@
     "textFa": ""
   },
   "shareText": "Nova VPN – fast & simple VPN: https://t.me/YOUR_CHANNEL",
-  "bonusMinutes": 60
+  "pricing": {
+    "gb": 5000,
+    "month": 10000,
+    "extraUser": 5000,
+    "minGb": 20,
+    "maxGb": 1000,
+    "maxUsers": 5
+  }
 }

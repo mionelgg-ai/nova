@@ -127,4 +127,23 @@
     <string name="notif_expiry_title">اشتراک رو به پایان است</string>
     <string name="notif_expiry_text">اشتراک پریمیوم شما %d روز دیگر تمام می‌شود. برای تمدید بزنید.</string>
     <string name="notice_open">باز کردن</string>
+
+    <!-- plan builder -->
+    <string name="plan_title">سرویس دلخواه خود را بسازید</string>
+    <string name="plan_data">حجم</string>
+    <string name="plan_duration">مدت</string>
+    <string name="plan_users">تعداد کاربر همزمان</string>
+    <string name="plan_total">مبلغ قابل پرداخت</string>
+    <string name="plan_buy">خرید</string>
+    <string name="gb_fmt">%d گیگ</string>
+    <string name="months_fmt">%d ماه</string>
+    <string name="users_fmt">%d</string>
+    <string name="price_unit">تومان</string>
+    <string name="order_copied">جزئیات سفارش کپی شد. آن را در تلگرام ارسال کنید.</string>
+    <string name="settings_title">تنظیمات</string>
+
+    <!-- usage card (placeholder numbers) -->
+    <string name="usage_remaining">حجم باقی‌مانده</string>
+    <string name="usage_days">روزهای باقی‌مانده</string>
+    <string name="usage_gb_fmt">%1$.1f از %2$d گیگ</string>
 </resources>

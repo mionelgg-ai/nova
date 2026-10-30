@@ -49,12 +49,23 @@ data class UpdateInfo(
 
 data class CodeEntry(val id: String, val wrapped: String, val expires: String)
 
+/** Plan builder prices (toman). Editable from servers.json -> "pricing". */
+data class Pricing(
+    val gb: Long = 5000,
+    val month: Long = 10000,
+    val extraUser: Long = 5000,
+    val minGb: Int = 20,
+    val maxGb: Int = 1000,
+    val maxUsers: Int = 5,
+)
+
 class RemoteConfig(
     val rev: Long,
     val salt: ByteArray,
     val telegram: String,
     val shareText: String,
     val bonusMinutes: Int,
+    val pricing: Pricing,
     val offer: Offer?,
     val notice: Notice?,
     val update: UpdateInfo?,
